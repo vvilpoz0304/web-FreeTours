@@ -1,10 +1,3 @@
-<script setup>
-import Header from '@/components/Header.vue';
-</script>
-
 <template>
-  <Header />
-  <main>
-    
-  </main>
+  Esta es la vista de home
 </template>
