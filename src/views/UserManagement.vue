@@ -5,8 +5,8 @@ import { ref } from 'vue';
 // Declaramos la URL para la API para mostrar todos los usuarios
 const API = "http://localhost/freetours/api.php"
 let users = ref([]);
-// Conseguimos un array con los usuarios mediante un fecth;
 
+// Conseguimos un array con los usuarios mediante un fecth;
 async function getData() {
     try {
         const response = await fetch(API + "/usuarios");
