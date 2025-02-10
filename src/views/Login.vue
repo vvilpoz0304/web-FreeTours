@@ -41,10 +41,17 @@ const handlePasswordBlur = () => {
 // Usamos "watch()" para reaccionar a los cambios en el email;
 watch(emailLog, handleEmail);
 
+// Conseguimos los datos del LogIn
+
+// emaillog declarado anteriormente
+let passLog = ref("");
+
+
 // Conseguimos los datos del registro;
-
-
-
+let emailSign = ref("")
+let nameSign = ref("");
+let passSign = ref("");
+let confirmPass = ref("");
 
 
 </script>
@@ -57,7 +64,7 @@ watch(emailLog, handleEmail);
             <label for="emailLog">Email: </label>
             <input name="emailLog" type="text" placeholder="E-mail" v-model="emailLog" />
             <label for="password">Password</label>
-            <input name="password" type="password" placeholder="At least 8 characters" @focus="handlePasswordFocus"
+            <input v-model="passLog" name="password" type="password" placeholder="At least 8 characters" @focus="handlePasswordFocus"
                 @blur="handlePasswordBlur" />
             <button> Iniciar Sesion</button>
         </div>
@@ -65,13 +72,13 @@ watch(emailLog, handleEmail);
             <h1>¡Registrate ahora!</h1>
             <img className="logo" alt="logo" src="../assets/images/osoGinUp.png"/>
             <label for="Name">*Name:</label>
-            <input id="nameSign" type="text" name="name" placeholder="Name">
+            <input v-model="nameSign" type="text" name="name" placeholder="Name">
             <label for="email">*Email: </label>
-            <input id="emailSign" name="email" type="text" placeholder="E-mail" />
+            <input v-model="emailSign" name="email" type="text" placeholder="E-mail" />
             <label for="password">*Password:</label>
-            <input id="passSign" name="password" type="password" placeholder="At least 8 characters"/>
-            <input name="password" type="password" placeholder="Repeat your password"/>
-            <button>Sign Up</button>
+            <input v-model="passSign" name="password" type="password" placeholder="At least 8 characters"/>
+            <input v-model="confirmPass" name="password" type="password" placeholder="Repeat your password"/>
+            <button @click="prueba">Sign Up</button>
         </div>
     </div>
 </template>
