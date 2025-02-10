@@ -32,7 +32,7 @@
   background: rgb(125, 179, 125);
   color: white;
   position: absolute;
-
+  
   width: 100%;
   display: flex;
   align-items: center;

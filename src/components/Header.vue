@@ -1,13 +1,12 @@
 <script setup>
 import router from "@/router";
 import { ref } from "vue"
-import NavBar from "./NavBar.vue";
+
 
 const emit = defineEmits(["sesionCerrada"])
 
 const props = defineProps({
-    title: String,
-    usuarioAutenticado: Object
+    userAuth: Object
 });
 
 // const usuarioAutenticado = localStorage.getItem("sesion") ? ref(JSON.parse(localStorage.getItem('sesion'))) : ref(null);
@@ -17,6 +16,7 @@ function cerrarSesion() {
     emit("sesionCerrada", null);
     router.push({ name: "home" })
 }
+
 </script>
 
 
@@ -32,15 +32,18 @@ function cerrarSesion() {
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
                         <a class="nav-link">
-                            <RouterLink to="/">Home</RouterLink>
+                            <RouterLink to="/home">Home</RouterLink>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Quiénes somos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link">
-                            <RouterLink to="/login">Login</RouterLink>
+                        <a class="nav-link" v-if="userAuth">
+                            <RouterLink to="/profile"><img src="../assets/images/perfil.png" alt="Perfil"></RouterLink>
+                        </a>
+                        <a class="nav-link" v-else>
+                            <RouterLink to="/login"><img src="../assets/images/perfil.png" alt="Perfil"></RouterLink>
                         </a>
                     </li>
                 </ul>

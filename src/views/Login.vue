@@ -5,6 +5,7 @@
 // el funcionamiento se basa en seleccionar una imagen del array que contiene los frames de las imagenes en base64
 import { ref, watch } from "vue";
 import { images, bearPasswordImage } from "./images.js";
+import router from "@/router";
 
 // Declaramos las varaibles de la imagen y el input del email
 const emailLog = ref("");
@@ -41,10 +42,10 @@ const handlePasswordBlur = () => {
 // Usamos "watch()" para reaccionar a los cambios en el email;
 watch(emailLog, handleEmail);
 
-// Conseguimos los datos del LogIn
 
-// emaillog declarado anteriormente
-let passLog = ref("");
+// Conseguimos los datos del LogIn
+    // emailLog lo hemos conseguido anteriormente
+let formLogin = ref({email: emailLog, password: ''});
 
 
 // Conseguimos los datos del registro;
@@ -53,22 +54,70 @@ let nameSign = ref("");
 let passSign = ref("");
 let confirmPass = ref("");
 
+// Controlamos si ya tiene una cuenta existente o no para mostrar un formulario u otro;
+let showLogin = ref(true);
+
+    function alternateLogin(){
+        showLogin.value = !showLogin.value
+    }
+//Controlamos si ya hay una sesion iniciada;
+
+
+
+// Creamos la funcion de inicio de Sesion;
+
+const emit = defineEmits(["sessionStarted"])
+const error = ref('');
+const API = "http://localhost/freetours/api.php"
+
+async function iniciarSesion() {
+    try {
+        const response = await fetch(API + "/usuarios");
+        const users = await response.json();
+        
+        console.log(users)
+        const userFound = users.find(
+            (e) => e.email === formLogin.value.email && e.contraseña === formLogin.value.password
+        );
+//        const usuario = users.map( e => ({email: e.email, pass: e.contraseña}))
+        //userFound = {nombre: userFound.nombre, email: userFound.email, rol: userFound.rol}
+        console.log(userFound);
+        
+        if (userFound) {
+            localStorage.setItem("session", JSON.stringify(userFound));
+
+            emit("sessionStarted",
+                {nombre: userFound.nombre,
+                rol: userFound.rol})
+            error.value = '';
+
+            router.push("/home")
+        } else {
+            error.value = 'Usuario o contraseña incorrectos';
+        }
+    } catch (err) {
+        error.value = 'Error al cargar los datos';
+    }
+}
 
 </script>
 
 <template>
-    <div id="container">
-        <div class="formLogin">
+    <div id="containerForms">
+        <div class="formLogin" v-if="showLogin">
             <h1>¡Bienvenido!</h1>
             <img className="logo" alt="logo" :src="image"/>
+            <p v-if="error" class="text-danger mt-2">{{ error }}</p>
             <label for="emailLog">Email: </label>
             <input name="emailLog" type="text" placeholder="E-mail" v-model="emailLog" />
             <label for="password">Password</label>
-            <input v-model="passLog" name="password" type="password" placeholder="At least 8 characters" @focus="handlePasswordFocus"
+            <input v-model="formLogin.password" name="password" type="password" placeholder="At least 8 characters" @focus="handlePasswordFocus"
                 @blur="handlePasswordBlur" />
-            <button> Iniciar Sesion</button>
+            <button @click="iniciarSesion"> Log In</button>
+            <p>Don't have an account yet? <a href="" @click.prevent="alternateLogin()"> Sign in</a></p>
+            
         </div>
-        <div class="formSignUp">
+        <div class="formSignUp" v-else>
             <h1>¡Registrate ahora!</h1>
             <img className="logo" alt="logo" src="../assets/images/osoGinUp.png"/>
             <label for="Name">*Name:</label>
@@ -78,13 +127,14 @@ let confirmPass = ref("");
             <label for="password">*Password:</label>
             <input v-model="passSign" name="password" type="password" placeholder="At least 8 characters"/>
             <input v-model="confirmPass" name="password" type="password" placeholder="Repeat your password"/>
-            <button @click="prueba">Sign Up</button>
+            <button >Sign Up</button>
+            <p>Have an account? <a href="" @click.prevent="alternateLogin()"> Log in</a></p>
         </div>
     </div>
 </template>
 
 <style scoped>
-#container{
+#containerForms{
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -102,7 +152,7 @@ let confirmPass = ref("");
 
   }
   .logo {
-    max-width: 10em;
+    max-width: 9em;
     display: block;
     margin: 0 auto 30px;
   }
@@ -116,6 +166,7 @@ let confirmPass = ref("");
   }
   button{
     border: 0px;
+    margin-bottom: 1em;
   }
  
 </style>
