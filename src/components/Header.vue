@@ -72,9 +72,16 @@ img {
 
 nav {
     width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 nav li{
     margin: 0em 5em 0em 5em;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 </style>
