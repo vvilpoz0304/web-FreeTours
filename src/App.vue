@@ -22,8 +22,8 @@ function updateDataSesion(user) {
 </script>
 
 <template>
-  <Header :userAuth="session"/>
-  <RouterView @sessionStarted="updateDataSesion" />
+  <Header :userAuth="session" @session-closed="updateDataSesion" />
+  <RouterView @sessionStarted="updateDataSesion" :userAuth="session"/>
   <Footer />
 </template>
 

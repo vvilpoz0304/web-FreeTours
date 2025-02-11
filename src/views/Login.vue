@@ -1,5 +1,5 @@
 <script setup>
-// Codigo hecho en React: https://github.com/martinacostadev/login-bear
+// Codigo de la "animacion" hecho en React: https://github.com/martinacostadev/login-bear
 
 // Importamos el ref y el watch de vue y ademas importamos los array de imagenes del archivo "images.js"
 // el funcionamiento se basa en seleccionar una imagen del array que contiene los frames de las imagenes en base64
@@ -47,30 +47,20 @@ watch(emailLog, handleEmail);
     // emailLog lo hemos conseguido anteriormente
 let formLogin = ref({email: emailLog, password: ''});
 
-
-// Conseguimos los datos del registro;
-let emailSign = ref("")
-let nameSign = ref("");
-let passSign = ref("");
-let confirmPass = ref("");
-
 // Controlamos si ya tiene una cuenta existente o no para mostrar un formulario u otro;
 let showLogin = ref(true);
 
     function alternateLogin(){
         showLogin.value = !showLogin.value
     }
-//Controlamos si ya hay una sesion iniciada;
-
 
 
 // Creamos la funcion de inicio de Sesion;
+const emit = defineEmits(["sessionStarted"]) // Declaramos el emit de sesion iniciada
+const error = ref(''); // Mensaje de error en la contraseña
+const API = "http://localhost/freetours/api.php" // Declaramos la API
 
-const emit = defineEmits(["sessionStarted"])
-const error = ref('');
-const API = "http://localhost/freetours/api.php"
-
-async function iniciarSesion() {
+async function logIn() { // Funcion que comprueba si los datos introducidos corresponden a algun cliente y en caso afirmativo crea el emit con el usuario que ha iniciado sesion
     try {
         const response = await fetch(API + "/usuarios");
         const users = await response.json();
@@ -91,13 +81,90 @@ async function iniciarSesion() {
                 rol: userFound.rol})
             error.value = '';
 
-            router.push("/home")
+            router.push("/home") // Redirige a la vista "home"
         } else {
             error.value = 'Usuario o contraseña incorrectos';
         }
     } catch (err) {
         error.value = 'Error al cargar los datos';
     }
+}
+
+// Conseguimos los datos del registro;
+const formSign = ref({
+    nombre: '',
+    email: '',
+    contraseña: ''
+})
+const confirmPass = ref('');
+
+/*
+
+// Declaramos los mensajes de error;
+let errName = false;
+let errEmailNotValid = false;
+let errEmailRep = false;
+let errPass = false;
+let errConfPass = false;
+
+// Funcion para validar los inputs del registro;
+
+function formSignValidation(){
+    let validName = false;
+    let validEmail = false;
+    let validPass = false;
+    let validConfPass = false;
+
+    let regExEmail =  /^\w+([.-_+]?\w+)*@\w+([.-]?\w+)*(\.\w{2,10})+$/ 
+
+    formSign.value.nombre.trim.length > 0 ? validName=true : errName = true; // Validamos que el nombre no esté vacio;
+    regExEmail.test(formSign.value.email) && !comprobarEmail(formSign.value.email) ? validEmail=true : errEmailNotValid = true; // Validamos que el email sea válido mediante un regEx y que el email no este ya registrado
+    formSign.value.contraseña.length > 8 && formSign.value.contraseña.match(/[0-9]/) ? validConfPass = true : errPass = true;
+    confirmPass == formSign.value.contraseña ? validConfPass = true : errConfPass = true;
+
+    if(validName &&  validEmail && validPass && validConfPass){
+        signIn();
+        console.log("esta bien");
+    } else console.log("esta mal");
+}
+//Funcion para recorrer los usuarios registrados y comprobar de que el usuario introducido en el registro no pertenezca ya a ningun cliente
+async function comprobarEmail(email) {
+    try {
+        const response = await fetch(API + "/usuarios");
+        const users = await response.json();
+        
+        const userExistent = users.find(
+            (e) => e.email === email
+        );
+        
+        if (userExistent) {
+            errEmailRep = true; // En caso de que ya exista alguien con ese correo, pondrá a true el mensaje de error de que ya existe alguien con ese correo
+        } else {
+            return false; // En caso de que no, devolverá false para indicar de que no existe nadie con ese usuario
+        }
+    } catch (err) {
+        error.value = 'Error al cargar los datos';
+    }
+}
+*/
+async function signIn() {
+    const newUser = {
+    nombre: formSign.value.nombre,
+    email: formSign.value.email,
+    contraseña: formSign.value.contraseña 
+}
+    const response = await fetch(API + "/usuarios", {
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newUser)
+    })
+    .then(response => response.json())
+    .then(data => console.log("Respuesta " + data))
+    .catch(error => console.error("Error " + error));
+
+    
 }
 
 </script>
@@ -113,7 +180,7 @@ async function iniciarSesion() {
             <label for="password">Password</label>
             <input v-model="formLogin.password" name="password" type="password" placeholder="At least 8 characters" @focus="handlePasswordFocus"
                 @blur="handlePasswordBlur" />
-            <button @click="iniciarSesion"> Log In</button>
+            <button @click="logIn"> Log In</button>
             <p>Don't have an account yet? <a href="" @click.prevent="alternateLogin()"> Sign in</a></p>
             
         </div>
@@ -121,13 +188,18 @@ async function iniciarSesion() {
             <h1>¡Registrate ahora!</h1>
             <img className="logo" alt="logo" src="../assets/images/osoGinUp.png"/>
             <label for="Name">*Name:</label>
-            <input v-model="nameSign" type="text" name="name" placeholder="Name">
+            <input v-model="formSign.nombre" type="text" name="name" placeholder="Name">
+            <p v-if="errName" class="text-danger mt-2">¡El nombre de usuario no puede estar vacio!</p>
             <label for="email">*Email: </label>
-            <input v-model="emailSign" name="email" type="text" placeholder="E-mail" />
+            <input v-model="formSign.email" name="email" type="email" placeholder="E-mail" />
+            <p v-if="errEmailNotValid" class="text-danger mt-2">Email no válido</p>
+            <p v-if="errEmailRep" class="text-danger mt-2">Este email ya está registrado.</p>
             <label for="password">*Password:</label>
-            <input v-model="passSign" name="password" type="password" placeholder="At least 8 characters"/>
+            <input v-model="formSign.contraseña" name="password" type="password" placeholder="At least 8 characters"/>
+            <p v-if="errPass" class="text-danger mt-2">La contraseña debe contener al menos 8 caracteres.</p>
             <input v-model="confirmPass" name="password" type="password" placeholder="Repeat your password"/>
-            <button >Sign Up</button>
+            <p v-if="errConfPass" class="text-danger mt-2">La contraseña no coincide</p>
+            <button @click="signIn">Sign Up</button>
             <p>Have an account? <a href="" @click.prevent="alternateLogin()"> Log in</a></p>
         </div>
     </div>

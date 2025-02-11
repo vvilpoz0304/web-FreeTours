@@ -31,9 +31,12 @@
 .footer {
   background: rgb(125, 179, 125);
   color: white;
-  position: absolute;
   
+  bottom: 0;
   width: 100%;
+  position: absolute;
+  margin-top: auto;
+
   display: flex;
   align-items: center;
   justify-content: space-between;

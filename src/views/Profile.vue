@@ -1,6 +1,19 @@
 <script setup>
 // Importamos todo lo necesario;
+import router from '@/router';
 import { ref } from 'vue';
+
+//En caso de acceder sin estar logueado te redirige a Login;
+
+const props = defineProps({
+    userAuth: Object
+});
+
+console.log(props.userAuth);
+
+if(!props.userAuth){
+    router.push("/login");
+}
 
 // Declaramos la URL para la API para mostrar todos los usuarios
 const API = "http://localhost/freetours/api.php"
