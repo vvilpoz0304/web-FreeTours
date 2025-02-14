@@ -18,4 +18,7 @@
   background-size: cover;
   height: 40vh;
 }
+#formBusqueda{
+  background-color: white;
+}
 </style>

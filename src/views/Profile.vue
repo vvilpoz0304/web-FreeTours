@@ -1,10 +1,9 @@
 <script setup>
 // Importamos todo lo necesario;
 import router from '@/router';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 //En caso de acceder sin estar logueado te redirige a Login;
-
 const props = defineProps({
     userAuth: Object
 });
@@ -15,11 +14,14 @@ if(!props.userAuth){
     router.push("/login");
 }
 
+//Comprobamos el rol del usuario logueado;
+let rol = ref(JSON.parse(localStorage.getItem("session")).rol)
+
 // Declaramos la URL para la API para mostrar todos los usuarios
 const API = "http://localhost/freetours/api.php"
 let users = ref([]);
 
-// Conseguimos un array con los usuarios mediante un fecth;
+// Conseguimos un array con los usuarios mediante un fetch;
 async function getData() {
     try {
         const response = await fetch(API + "/usuarios");
@@ -29,18 +31,38 @@ async function getData() {
         }
 
         users.value = await response.json(); // Guardamos los datos en la variable global
-        console.log("Usuarios obtenidos correctamente:", users);
     } catch (error) {
         alert(`Error al obtener datos: ${error.message}`);
     }
 }
 
-getData().then(() => {
-    users.value = users.value.map(e => ({ Nombre: e.nombre, Email: e.email, Rol: e.rol }));
-    console.log(users);
-})
+onMounted(getData); // Utilizamos onMounted para que cargue los datos una vez se haya caragdo los componentes;
 
-let rol = ref(JSON.parse(localStorage.getItem("session")).rol)
+// Función para actualizar el Rol de un usuario;
+
+function updateRol(id, rol){
+    fetch(`http://localhost/freetours/api.php/usuarios?id=${id}`, {
+    method: 'PUT',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({rol: rol})
+})
+.then(response => response.json())
+.then(data => console.log('Respuesta:', data))
+.catch(error => console.error('Error:', error));
+
+}
+
+// Funcion para eliminar un usuario
+function deleteUser(id){
+    fetch(`http://localhost/freetours/api.php/usuarios?id=${id}`, {
+    method: 'DELETE',
+})
+.then(getData())
+.catch(error => console.error('Error:', error));
+
+}
 
 </script>
 <template>
@@ -65,11 +87,30 @@ let rol = ref(JSON.parse(localStorage.getItem("session")).rol)
         </ul>
         <div class="tab-content" id="myTabContent">
             <!--Contenido de la ventana de Gestion de Usuarios-->
-            <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
+            <div class="tab-pane fade show active table-responsive w-75 border" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
                 tabindex="0">
-                <ul>
-                    <li v-for="user in users">Nombre: {{ user.Nombre }}</li>
-                </ul>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Administrar</th>
+                    </tr>
+                    <tr v-for="(user) in users" :key=user.id>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.nombre }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <select v-model="user.rol" @change="updateRol(user.id, user.rol)" name="rol" id="userRol">
+                                <option value="admin">Admin</option>
+                                <option value="guia">Guia Turistico</option>
+                                <option value="cliente">Cliente</option>
+                            </select>
+                        </td>
+                        <td><button @click="deleteUser(user.id)">Eliminar Usuario</button></td>
+                    </tr>
+                </table>
             </div>
             <!--Contenido de la ventana de la Creacion de Rutas-->
             <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
@@ -142,4 +183,9 @@ let rol = ref(JSON.parse(localStorage.getItem("session")).rol)
     color: white !important; 
     font-weight: bold;
 }
+    #myTabContent{
+        margin: 2em 2em;
+        display: flex;
+        justify-content: center;
+    }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer">
+  <footer class="py-3 mt-auto">
     <div>
       <p>Información de Contacto:</p>
       <ul>
@@ -28,14 +28,13 @@
 </template>
 
 <style scoped>
-.footer {
+footer {
   background: rgb(125, 179, 125);
   color: white;
   
   bottom: 0;
-  width: 100%;
   position: absolute;
-  margin-top: auto;
+  width: 100%;
 
   display: flex;
   align-items: center;
@@ -43,7 +42,7 @@
   text-align: center;
 }
 
-.footer div {
+footer div {
   margin: 1em 2em 0em 2em;
 }
 #iconos a{
