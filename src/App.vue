@@ -22,15 +22,34 @@ function updateDataSesion(user) {
 </script>
 
 <template>
-  <Header :userAuth="session" @session-closed="updateDataSesion" />
-  <RouterView @sessionStarted="updateDataSesion" :userAuth="session"/>
-  <Footer/>
+  <div class="layout">
+    <Header :userAuth="session" @session-closed="updateDataSesion" />
+    
+    <main class="content">
+      <RouterView @sessionStarted="updateDataSesion" :userAuth="session"/>
+    </main>
+
+    <Footer />
+  </div>
 </template>
 
 <style scoped>
 .layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh; /* El contenedor ocupa toda la altura de la pantalla */
+}
+
+.content {
+  flex: 1; /* Ocupa el espacio disponible y empuja el footer */
+  overflow-y: auto; /* Permite desplazamiento si el contenido es grande */
+}
+
+footer {
+  background: rgb(125, 179, 125);
+  color: white;
+  text-align: center;
+  padding: 10px;
+  width: 100%;
 }
 </style>

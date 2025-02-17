@@ -2,7 +2,6 @@
 import router from "@/router";
 import { ref } from "vue"
 
-
 const emit = defineEmits(["sessionClosed"])
 
 const props = defineProps({
@@ -44,9 +43,15 @@ function logOut() {
                                 <img src="../assets/images/perfil.png" alt="Perfil">
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <li v-if="userAuth"><RouterLink to="/profile"><a class="dropdown-item">Perfil</a></RouterLink></li>
-                                <li v-else><RouterLink to="/login"><a class="dropdown-item">Iniciar Sesion</a></RouterLink></li>
-                                <li v-if="userAuth"><a class="dropdown-item" @click="logOut">Cerrar Sesion</a></li>
+                                <li v-if="userAuth">
+                                    <RouterLink class="dropdown-item" to="/profile">Perfil</RouterLink>
+                                </li>
+                                <li v-else>
+                                    <RouterLink class="dropdown-item" to="/login">Iniciar Sesión</RouterLink>
+                                </li>
+                                <li v-if="userAuth">
+                                    <a class="dropdown-item" @click="logOut">Cerrar Sesión</a>
+                                </li>
                             </ul>
                         </div>
                     </li>
@@ -90,12 +95,14 @@ nav li {
     align-items: center;
     justify-content: center;
 }
-#dropdownMenuButton1{
+
+#dropdownMenuButton1 {
     border: 0px;
     background-color: rgb(125, 179, 125);
     height: 4em;
 }
-.dropdown-item{
+
+.dropdown-item {
     display: flex;
     justify-content: center;
     width: 2em;

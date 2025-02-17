@@ -32,9 +32,6 @@ footer {
   background: rgb(125, 179, 125);
   color: white;
   
-  bottom: 0;
-  position: absolute;
-  width: 100%;
 
   display: flex;
   align-items: center;
