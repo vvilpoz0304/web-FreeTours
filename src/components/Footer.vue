@@ -29,7 +29,7 @@
 
 <style scoped>
 footer {
-  background: rgb(125, 179, 125);
+  background: #51ab5b;
   color: white;
   
 

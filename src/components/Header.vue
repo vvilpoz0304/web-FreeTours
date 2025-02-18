@@ -43,8 +43,14 @@ function logOut() {
                                 <img src="../assets/images/perfil.png" alt="Perfil">
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <li v-if="userAuth">
-                                    <RouterLink class="dropdown-item" to="/profile">Perfil</RouterLink>
+                                <li v-if="userAuth && userAuth.rol === 'admin'">
+                                    <RouterLink class="dropdown-item" to="/admin">Administrar</RouterLink>
+                                </li>
+                                <li v-else-if="userAuth && userAuth.rol === 'guia'">
+                                    <RouterLink class="dropdown-item" to="/guia">Mi guia</RouterLink>
+                                </li>
+                                <li v-else-if="userAuth && userAuth.rol === 'cliente'">
+                                    <RouterLink class="dropdown-item" to="/cliente">Mi usuario</RouterLink>
                                 </li>
                                 <li v-else>
                                     <RouterLink class="dropdown-item" to="/login">Iniciar Sesión</RouterLink>
@@ -64,7 +70,7 @@ function logOut() {
 
 <style scoped>
 header {
-    background-color: rgb(125, 179, 125);
+    background-color: #6bc472;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -98,7 +104,7 @@ nav li {
 
 #dropdownMenuButton1 {
     border: 0px;
-    background-color: rgb(125, 179, 125);
+    background-color: #6bc472;
     height: 4em;
 }
 
@@ -106,5 +112,13 @@ nav li {
     display: flex;
     justify-content: center;
     width: 2em;
+}
+.dropdown-menu a{
+    margin: 0%;
+    padding: 0%;
+    width: auto;
+}
+.dropdown-menu a:hover{
+    background-color: lightgray !important;
 }
 </style>

@@ -40,12 +40,6 @@ async function getData() {
 
 onMounted(getData); // Utilizamos onMounted para que cargue los datos una vez se haya caragdo los componentes;
 
-
-///////////////////////////
-/// Funciones del admin ///
-///////////////////////////
-
-
 // Función para actualizar el Rol de un usuario;
 function updateRol(id, rol) {
     fetch(`http://localhost/freetours/api.php/usuarios?id=${id}`, {
@@ -86,12 +80,7 @@ function deleteUser(id) {
 
 </script>
 <template>
-    <!-- Añadimos las pestañas mediante bootstrap.
-    Mostraremos unas u otras dependiendo del rol del usuario registrado
-    esto  lo haremos mediante el condional "v-if" -->
-    <div v-if="rol === 'admin'">
-        <!-- Pestañas del administrador -->
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
+     <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
                     type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Gestion de
@@ -108,11 +97,16 @@ function deleteUser(id) {
                     Rutas</button>
             </li>
         </ul>
+    <!-- Añadimos las pestañas mediante bootstrap.
+    Mostraremos unas u otras dependiendo del rol del usuario registrado
+    esto  lo haremos mediante el condional "v-if" -->
+    <div v-if="userAuth && rol == 'admin'" class="container main">
+        <!-- Pestañas del administrador -->
         <div class="tab-content" id="myTabContent">
             <!--Contenido de la ventana de Gestion de Usuarios-->
-            <div class="tab-pane fade show active table-responsive w-75 border" id="home-tab-pane" role="tabpanel"
+            <div class="tab-pane fade show active table-responsive w-100 border shadow" id="home-tab-pane" role="tabpanel" 
                 aria-labelledby="home-tab" tabindex="0">
-                <table class="table table-striped table-hover">
+                <table class="table table-striped table-hover align-middle">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -127,16 +121,17 @@ function deleteUser(id) {
                             <td>{{ user.id }}</td>
                             <td>{{ user.nombre }}</td>
                             <td>{{ user.email }}</td>
-                            <td>
+                            <td v-if="user.rol == 'admin'">
+                                <p>Admin</p>
+                            </td>
+                            <td v-else>
                                 <select v-model="user.rol" @change="updateRol(user.id, user.rol)" name="rol"
                                     id="userRol">
-                                    <option value="admin">Admin</option>
                                     <option value="guia">Guia Turistico</option>
                                     <option value="cliente">Cliente</option>
                                 </select>
                             </td>
-                            <td><button type="button" @click="openModal(user)" class="deleteButton">Eliminar
-                                    usuario</button></td>
+                            <td><button type="button" @click="openModal(user)" class="deleteButton"><img src="../assets/images/papelera.png"  alt="papelera"></button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -173,10 +168,14 @@ function deleteUser(id) {
                             <label for="fecha" class="form-label">Fecha:</label>
                             <input type="date" id="fecha" name="fecha" class="form-control">
                         </div>
+                        <div class="col-md-6">
+                            <label for="foto" class="form-label">Inserte la url de la imagen de la ruta:</label>
+                            <input type="text" id="foto" name="foto" class="form-control">
+                        </div>
                     </div>
 
                     <div class="text-center">
-                        <button type="submit" class="btn btn-primary">Enviar</button>
+                        <button type="submit" class="btn btn-primary" @click.prevent="createRoute()">Enviar</button>
                     </div>
                 </form>
 
@@ -185,57 +184,11 @@ function deleteUser(id) {
             <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
                 Pestaña para la cancelacion de rutas
             </div>
-            <div class="tab-pane fade" id="disabled-tab-pane" role="tabpanel" aria-labelledby="disabled-tab"
-                tabindex="0">...</div>
         </div>
     </div>
 
-    <!-- Pestañas del guia -->
-    <div v-if="rol === 'guia'">
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
-                    type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Rutas Asignadas</button>
-            </li>
-        </ul>
-        <div class="tab-content" id="myTabContent">
-            <!--Contenido de la ventana de Gestion de Usuarios-->
-            <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
-                tabindex="0">
-                <ul>
-                    <li>Rutas asignadas</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <!-- Pestañas para el cliente-->
-    <div v-if="rol === 'cliente'">
-        <!-- Pestañas del administrador -->
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
-                    type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Rutas
-                    Reservadas</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane"
-                    type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Rutas
-                    Realizadas</button>
-            </li>
-        </ul>
-        <div class="tab-content" id="myTabContent">
-            <!--Contenido de la ventana de Gestion de Usuarios-->
-            <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
-                tabindex="0">
-                <ul>
-                    <li>Rutas reservadas</li>
-                </ul>
-            </div>
-            <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
-                Rutas Realizadas
-            </div>
-        </div>
-    </div>
+    
+   
 
 
     <!-- Modal de confirmacion de eliminacion de usuario-->
@@ -247,7 +200,7 @@ function deleteUser(id) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    El usuario <b>{{ selectedUser?.nombre }}</b> con el ID: <b>{{ selectedUser?.id }}</b>.
+                    El usuario <b>{{ selectedUser?.nombre }}</b> con el ID: <b>{{ selectedUser?.id }}</b> será eliminado permanentemente.
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -257,16 +210,23 @@ function deleteUser(id) {
             </div>
         </div>
     </div>
-
-
 </template>
 
 <style scoped>
-/* Estilo del perfil del admin*/
-/*
+    /*
     "aria-selected" es la clase que se le asigna automaticamente a la tab activa
      !!important se usa para sobrescribir los estilos de Bootstrap.
     */
+.nav-link{
+    border: 1px solid lightgray !important;
+    color: black;
+    transition: ease-out 0.2s;
+}
+.nav-link:hover{
+    background-color: lightgray;
+    color: black;
+    font-weight: bold;
+}
 .nav-tabs .nav-link[aria-selected="true"] {
     background-color: rgb(101, 172, 101) !important;
     color: white !important;
@@ -278,13 +238,30 @@ function deleteUser(id) {
     display: flex;
     justify-content: center;
 }
+.deleteButton{
+    border: none;
+    background-color: transparent;
+}
+.deleteButton img{
+    width: 35px;
+}
 
 table {
     text-align: center;
+    align-items: center;
+    
 }
-
+table select{
+    border: none;
+}
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
     background-color: lightgray !important;
+}
+
+.main{
+    margin-top: 2em;
+    border-radius: 5px;
+    
 }
 </style>
