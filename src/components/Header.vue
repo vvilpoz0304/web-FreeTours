@@ -10,6 +10,9 @@ const props = defineProps({
 
 // const usuarioAutenticado = localStorage.getItem("sesion") ? ref(JSON.parse(localStorage.getItem('sesion'))) : ref(null);
 
+//Comprobamos el rol del usuario logueado;
+let rol = ref(JSON.parse(localStorage.getItem("session")).rol)
+
 function logOut() {
 
     emit("sessionClosed", null);
@@ -43,13 +46,13 @@ function logOut() {
                                 <img src="../assets/images/perfil.png" alt="Perfil">
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <li v-if="userAuth && userAuth.rol === 'admin'">
+                                <li v-if="userAuth && rol === 'admin'">
                                     <RouterLink class="dropdown-item" to="/admin">Administrar</RouterLink>
                                 </li>
-                                <li v-else-if="userAuth && userAuth.rol === 'guia'">
+                                <li v-else-if="userAuth && rol === 'guia'">
                                     <RouterLink class="dropdown-item" to="/guia">Mi guia</RouterLink>
                                 </li>
-                                <li v-else-if="userAuth && userAuth.rol === 'cliente'">
+                                <li v-else-if="userAuth && rol === 'cliente'">
                                     <RouterLink class="dropdown-item" to="/cliente">Mi usuario</RouterLink>
                                 </li>
                                 <li v-else>

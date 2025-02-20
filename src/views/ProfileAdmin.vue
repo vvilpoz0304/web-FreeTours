@@ -106,7 +106,7 @@ function deleteUser(id) {
             <!--Contenido de la ventana de Gestion de Usuarios-->
             <div class="tab-pane fade show active table-responsive w-100 border shadow" id="home-tab-pane" role="tabpanel" 
                 aria-labelledby="home-tab" tabindex="0">
-                <table class="table table-striped table-hover align-middle">
+                <table class="table table-striped table-hover align-middle" id="userTable">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -131,7 +131,8 @@ function deleteUser(id) {
                                     <option value="cliente">Cliente</option>
                                 </select>
                             </td>
-                            <td><button type="button" @click="openModal(user)" class="deleteButton"><img src="../assets/images/papelera.png"  alt="papelera"></button></td>
+                            <td v-if="user.rol == 'admin'"><button type="button" disabled class="unavailable">No disponible</button></td>
+                            <td v-else><button type="button" @click="openModal(user)" class="deleteButton"><img src="../assets/images/papelera.png"  alt="papelera"></button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -242,21 +243,37 @@ function deleteUser(id) {
     border: none;
     background-color: transparent;
 }
+
 .deleteButton img{
     width: 35px;
+    transition: ease-in 0.2s;
+ 
+}
+.deleteButton img:hover{
+    width: 2.5em;
 }
 
-table {
+.unavailable{
+    border: none;
+}
+
+#userTable {
     text-align: center;
     align-items: center;
     
 }
-table select{
+#userTable select{
     border: none;
 }
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
     background-color: lightgray !important;
+}
+.table-hover tbody tr:hover td{
+    height: 6em;
+}
+.table-hover tbody tr:hover {
+    border: 1px solid black;
 }
 
 .main{
