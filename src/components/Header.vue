@@ -1,6 +1,6 @@
 <script setup>
 import router from "@/router";
-import { ref } from "vue"
+import { ref, computed } from "vue"
 
 const emit = defineEmits(["sessionClosed"])
 
@@ -8,15 +8,8 @@ const props = defineProps({
     userAuth: Object
 });
 
-// const usuarioAutenticado = localStorage.getItem("sesion") ? ref(JSON.parse(localStorage.getItem('sesion'))) : ref(null);
-
 //Comprobamos el rol del usuario logueado;
-let rol = ref(null);
-if (localStorage.getItem("session")) {
-    rol.value = ref(JSON.parse(localStorage.getItem("session")).rol)
-} else {
-    rol.value = ref(null)
-}
+const rol = computed(() => props.userAuth ? props.userAuth.rol : null); //Utilizamos computed para que se actualice el valor de rol cuando cambie el valor de userAuth
 
 // Funcion para cerrar la sesion;
 function logOut() {
@@ -51,13 +44,13 @@ function logOut() {
                                 <img src="../assets/images/perfil.png" alt="Perfil">
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <li v-if="userAuth && rol.value === 'admin'">
+                                <li v-if="userAuth && rol === 'admin'">
                                     <RouterLink class="dropdown-item" to="/admin">Administrar</RouterLink>
                                 </li>
-                                <li v-else-if="userAuth && rol.value === 'guia'">
+                                <li v-else-if="userAuth && rol === 'guia'">
                                     <RouterLink class="dropdown-item" to="/guia">Mi guia</RouterLink>
                                 </li>
-                                <li v-else-if="userAuth && rol.value === 'cliente'">
+                                <li v-else-if="userAuth && rol === 'cliente'">
                                     <RouterLink class="dropdown-item" to="/cliente">Mi usuario</RouterLink>
                                 </li>
                                 <li v-else>

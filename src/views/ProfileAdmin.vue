@@ -88,7 +88,7 @@ function deleteUser(id) {
 ////////////////////////////////
 let currentPage = ref(1);
 let usersPerPage = 8;
-let totalPages = Math.ceil(users.value.length / usersPerPage); // Calculamos el numero de paginas totales
+let totalPages = computed(() => Math.ceil(users.value.length / usersPerPage)); // Calculamos el numero de paginas totales, lo hacemos computed para que se actulice automaticamente cuando el numero de usuarios cambie
 
 let paginatedUsers = computed(() => {
     const start = (currentPage.value - 1) * usersPerPage; // Calculamos el inicio de los registros de la pagina
@@ -317,7 +317,16 @@ function previousPage() {
 .table-hover tbody tr:hover {
     border: 1px solid black;
 }
-
+.page-link{
+    background-color: #e8ffe9;
+    color: black;
+}
+.page-link:focus{
+    background-color: #7ac58a;
+}
+.page-item .active .page-link{
+    background-color: red; /* No fufa */ 
+}
 .main {
     margin-top: 2em;
     border-radius: 5px;

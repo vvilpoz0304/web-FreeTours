@@ -71,7 +71,6 @@ async function logIn() { // Funcion que comprueba si los datos introducidos corr
         );
 //        const usuario = users.map( e => ({email: e.email, pass: e.contraseña}))
         //userFound = {nombre: userFound.nombre, email: userFound.email, rol: userFound.rol}
-        console.log(userFound);
         
         if (userFound) {
             localStorage.setItem("session", JSON.stringify(userFound));
