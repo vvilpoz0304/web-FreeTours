@@ -103,17 +103,25 @@ nav li {
     justify-content: center;
     border: none;
 }
+
 .nav-link {
-    color: white; /* Color del texto */
-    text-decoration: none; /* Eliminar subrayado */
-    border-radius: 0.25em; /* Bordes redondeados */
-    border: none !important; /* Eliminar borde */
+    color: white;
+    /* Color del texto */
+    text-decoration: none;
+    /* Eliminar subrayado */
+    border-radius: 0.25em;
+    /* Bordes redondeados */
+    border: none !important;
+    /* Eliminar borde */
 }
 
 .nav-link:hover {
-    background-color: #5aa65a; /* Color de fondo al pasar el ratón */
-    color: white; /* Color del texto al pasar el ratón */
+    background-color: #5aa65a;
+    /* Color de fondo al pasar el ratón */
+    color: white;
+    /* Color del texto al pasar el ratón */
 }
+
 #dropdownMenuButton1 {
     border: 0px;
     background-color: #6bc472;

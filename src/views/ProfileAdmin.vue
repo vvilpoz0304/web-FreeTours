@@ -87,7 +87,7 @@ function deleteUser(id) {
 // Paginacion de los usuarios //
 ////////////////////////////////
 let currentPage = ref(1);
-let usersPerPage = 8;
+let usersPerPage = 6;
 let totalPages = computed(() => Math.ceil(users.value.length / usersPerPage)); // Calculamos el numero de paginas totales, lo hacemos computed para que se actulice automaticamente cuando el numero de usuarios cambie
 
 let paginatedUsers = computed(() => {
@@ -112,6 +112,45 @@ function previousPage() {
 //// CREACION DE RUTAS ////
 ///////////////////////////
 
+let formCreator = ref({
+    titulo: '',
+    localidad: '',
+    longitud: '',
+    latitud: '',
+    descripcion: '',
+    fecha: '',
+    hora: '',
+    foto: '',
+    guia: ''
+});
+
+// Funcion para crear una ruta
+function createRoute() {
+    fetch('http://localhost/freetours/api.php/rutas', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formCreator.value)
+    })
+        .then(response => response.json())
+        .catch(error => console.error('Error:', error));
+}
+
+// Funcion para obtener los guias disponibles;
+const guideAvailable = ref([]);
+
+function getGuides() {
+    const fecha = formCreator.value.fecha;
+    
+    fetch(`http://localhost/freetours/api.php/asignaciones?fecha=${fecha}`, {
+        method: 'GET',
+    })
+        .then(response => response.json())
+        .then(data => guideAvailable.value = data)
+        .catch(error => console.error('Error:', error));
+        console.log(fecha);
+}
 
 </script>
 <template>
@@ -193,45 +232,48 @@ function previousPage() {
                         <div class="col-md-6">
                             <label for="titulo" class="form-label">Título de la ruta:</label>
                             <input type="text" id="titulo" name="titulo" class="form-control"
-                                placeholder="Título de la ruta">
+                                placeholder="Título de la ruta" v-model="formCreator.titulo">
                         </div>
                         <div class="col-md-6">
                             <label for="localidad" class="form-label">Localidad:</label>
                             <input type="text" id="localidad" name="localidad" class="form-control"
-                                placeholder="Localización">
+                                placeholder="Localización" v-model="formCreator.localidad">
                         </div>
                         <div class="col-md-6">
                             <label for="longitud" class="form-label">Longitud:</label>
                             <input type="text" id="longitud" name="longitud" class="form-control"
-                                placeholder="Localización">
+                                placeholder="Localización" v-model="formCreator.longitud">
                         </div>
                         <div class="col-md-6">
                             <label for="latitud" class="form-label">Latitud:</label>
                             <input type="text" id="latitud" name="latitud" class="form-control"
-                                placeholder="Localización">
+                                placeholder="Localización" v-model="formCreator.latitud">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="desc" class="form-label">Descripción:</label>
                         <textarea id="desc" name="desc" class="form-control" rows="3"
-                            placeholder="Descripción de la ruta"></textarea>
+                            placeholder="Descripción de la ruta" v-model="formCreator.descripcion"></textarea>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="fecha" class="form-label">Fecha:</label>
-                            <input type="date" id="fecha" name="fecha" class="form-control">
+                            <input type="date" id="fecha" name="fecha" class="form-control" v-model="formCreator.fecha"
+                                @change="getGuides()">
                             <label for="hora" class="form-label">Hora:</label>
-                            <input type="time" id="hora" name="hora" class="form-control">
+                            <input type="time" id="hora" name="hora" class="form-control" v-model="formCreator.hora">
                         </div>
                         <div class="col-md-6">
                             <label for="foto" class="form-label">Inserte la url de la imagen de la ruta:</label>
-                            <input type="text" id="foto" name="foto" class="form-control">
+                            <input type="text" id="foto" name="foto" class="form-control" placeholder="URL de la imagen"
+                                v-model="formCreator.foto">
                         </div>
                         <div class="col-md-6">
                             <label for="guia" class="form-label">Asignar Guia:</label>
-                            <select id="guia" name="guia" class="form-control">
+                            <select id="guia" name="guia" class="form-control" v-model="formCreator.guia">
+                                <option  v-for="guide in guideAvailable" :key="guide.id" :value="guide.id">Guia con id:{{ guide.id }}</option>
                             </select>
                         </div>
                     </div>
@@ -310,23 +352,24 @@ function previousPage() {
     background-color: rgb(206, 247, 202) !important;
 }
 
-.table-hover tbody tr:hover td {
-    height: 6em;
-}
-
 .table-hover tbody tr:hover {
     border: 1px solid black;
 }
-.page-link{
+
+.page-link {
     background-color: #e8ffe9;
     color: black;
 }
-.page-link:focus{
+
+.page-link:focus {
     background-color: #7ac58a;
 }
-.page-item .active .page-link{
-    background-color: red; /* No fufa */ 
+
+.page-item .active .page-link {
+    background-color: red;
+    /* No fufa */
 }
+
 .main {
     margin-top: 2em;
     border-radius: 5px;

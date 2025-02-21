@@ -1,14 +1,13 @@
+*{
+    font-family: Arial, Helvetica, 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
 /*
   Estilo de las pestañas
 */
-
-/*
-    "aria-selected" es la clase que se le asigna automaticamente a la tab activa
-    !important se usa para sobrescribir los estilos de Bootstrap.
-*/
 .nav-link {
     border: 1px solid lightgray !important;
-    color: black;
+    color: rgb(52, 52, 52)  !important;
     transition: ease-out 0.2s;
 }
 
@@ -17,7 +16,10 @@
     color: black;
     font-weight: bold;
 }
-
+/*
+    "aria-selected" es la clase que se le asigna automaticamente a la tab activa
+    !important se usa para sobrescribir los estilos de Bootstrap.
+*/
 .nav-tabs .nav-link[aria-selected="true"] {
     background-color: rgb(101, 172, 101) !important;
     color: white !important;
