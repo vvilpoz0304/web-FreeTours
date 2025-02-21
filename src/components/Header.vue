@@ -11,15 +11,20 @@ const props = defineProps({
 // const usuarioAutenticado = localStorage.getItem("sesion") ? ref(JSON.parse(localStorage.getItem('sesion'))) : ref(null);
 
 //Comprobamos el rol del usuario logueado;
-let rol = ref(JSON.parse(localStorage.getItem("session")).rol)
+let rol = ref(null);
+if (localStorage.getItem("session")) {
+    rol.value = ref(JSON.parse(localStorage.getItem("session")).rol)
+} else {
+    rol.value = ref(null)
+}
 
+// Funcion para cerrar la sesion;
 function logOut() {
-
     emit("sessionClosed", null);
     router.push({ name: "home" })
 }
-</script>
 
+</script>
 
 <template>
     <header class="text-white  p-3">
@@ -46,13 +51,13 @@ function logOut() {
                                 <img src="../assets/images/perfil.png" alt="Perfil">
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <li v-if="userAuth && rol === 'admin'">
+                                <li v-if="userAuth && rol.value === 'admin'">
                                     <RouterLink class="dropdown-item" to="/admin">Administrar</RouterLink>
                                 </li>
-                                <li v-else-if="userAuth && rol === 'guia'">
+                                <li v-else-if="userAuth && rol.value === 'guia'">
                                     <RouterLink class="dropdown-item" to="/guia">Mi guia</RouterLink>
                                 </li>
-                                <li v-else-if="userAuth && rol === 'cliente'">
+                                <li v-else-if="userAuth && rol.value === 'cliente'">
                                     <RouterLink class="dropdown-item" to="/cliente">Mi usuario</RouterLink>
                                 </li>
                                 <li v-else>
@@ -103,8 +108,19 @@ nav li {
     display: flex;
     align-items: center;
     justify-content: center;
+    border: none;
+}
+.nav-link {
+    color: white; /* Color del texto */
+    text-decoration: none; /* Eliminar subrayado */
+    border-radius: 0.25em; /* Bordes redondeados */
+    border: none !important; /* Eliminar borde */
 }
 
+.nav-link:hover {
+    background-color: #5aa65a; /* Color de fondo al pasar el ratón */
+    color: white; /* Color del texto al pasar el ratón */
+}
 #dropdownMenuButton1 {
     border: 0px;
     background-color: #6bc472;
@@ -116,12 +132,14 @@ nav li {
     justify-content: center;
     width: 2em;
 }
-.dropdown-menu a{
+
+.dropdown-menu a {
     margin: 0%;
     padding: 0%;
     width: auto;
 }
-.dropdown-menu a:hover{
+
+.dropdown-menu a:hover {
     background-color: lightgray !important;
 }
 </style>

@@ -1,7 +1,7 @@
 <script setup>
 // Importamos todo lo necesario;
 import router from '@/router';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { Modal } from "bootstrap";
 
 
@@ -10,14 +10,19 @@ const props = defineProps({
     userAuth: Object
 });
 
-console.log(props.userAuth);
-
 if (!props.userAuth) {
     router.push("/login");
 }
 
 //Comprobamos el rol del usuario logueado;
 let rol = ref(JSON.parse(localStorage.getItem("session")).rol)
+
+rol.value != 'admin' ? router.push(`/${rol.value}`) : null;
+
+
+///////////////////////////
+/// GESTION DE USUARIOS ///
+///////////////////////////
 
 // Declaramos la URL para la API para mostrar todos los usuarios
 const API = "http://localhost/freetours/api.php"
@@ -38,7 +43,7 @@ async function getData() {
     }
 }
 
-onMounted(getData); // Utilizamos onMounted para que cargue los datos una vez se haya caragdo los componentes;
+onMounted(getData); // Utilizamos onMounted para que cargue los datos una vez se haya cargado los componentes;
 
 // Función para actualizar el Rol de un usuario;
 function updateRol(id, rol) {
@@ -54,7 +59,7 @@ function updateRol(id, rol) {
         .catch(error => console.error('Error:', error));
 
 }
-const selectedUser = ref(null); // Variable del usuario seleccionado que que claramos para manejarlo mediante el modal
+const selectedUser = ref(null); // Variable del usuario seleccionado que declaramos para manejarlo mediante el modal
 let modalInstance = null;  // Declaramos una variable para instanciar el modal
 
 // Cargar el modal al montar el componente
@@ -78,34 +83,62 @@ function deleteUser(id) {
     modalInstance.hide();
 }
 
+////////////////////////////////
+// Paginacion de los usuarios //
+////////////////////////////////
+let currentPage = ref(1);
+let usersPerPage = 8;
+let totalPages = Math.ceil(users.value.length / usersPerPage); // Calculamos el numero de paginas totales
+
+let paginatedUsers = computed(() => {
+    const start = (currentPage.value - 1) * usersPerPage; // Calculamos el inicio de los registros de la pagina
+    const end = start + usersPerPage; // Al numero inicial le sumamos los 10 registros que queremos mostrar
+    return users.value.slice(start, end); // Devolvemos los registros que queremos mostrar
+})
+
+function nextPage() {
+    if (currentPage.value < Math.ceil(users.value.length / usersPerPage)) { // Comprobamos que no estemos en la utlima pagina
+        currentPage.value++;
+    }
+}
+function previousPage() {
+    if (currentPage.value > 1) { // Comprobamos que no estamos en la primera pagina;
+        currentPage.value--;
+    }
+}
+
+
+///////////////////////////
+//// CREACION DE RUTAS ////
+///////////////////////////
+
+
 </script>
 <template>
-     <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
-                    type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Gestion de
-                    Usuarios</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane"
-                    type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Creacion de
-                    Rutas</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane"
-                    type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Cancelacion de
-                    Rutas</button>
-            </li>
-        </ul>
-    <!-- Añadimos las pestañas mediante bootstrap.
-    Mostraremos unas u otras dependiendo del rol del usuario registrado
-    esto  lo haremos mediante el condional "v-if" -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
+                type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Gestion de
+                Usuarios</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane"
+                type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Creacion de
+                Rutas</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane"
+                type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Cancelacion de
+                Rutas</button>
+        </li>
+    </ul>
+    <!-- Añadimos las pestañas mediante bootstrap.-->
     <div v-if="userAuth && rol == 'admin'" class="container main">
         <!-- Pestañas del administrador -->
         <div class="tab-content" id="myTabContent">
             <!--Contenido de la ventana de Gestion de Usuarios-->
-            <div class="tab-pane fade show active table-responsive w-100 border shadow" id="home-tab-pane" role="tabpanel" 
-                aria-labelledby="home-tab" tabindex="0">
+            <div class="tab-pane fade show active table-responsive w-100 border shadow" id="home-tab-pane"
+                role="tabpanel" aria-labelledby="home-tab" tabindex="0">
                 <table class="table table-striped table-hover align-middle" id="userTable">
                     <thead>
                         <tr>
@@ -117,7 +150,7 @@ function deleteUser(id) {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(user) in users" :key=user.id>
+                        <tr v-for="(user) in paginatedUsers" :key=user.id>
                             <td>{{ user.id }}</td>
                             <td>{{ user.nombre }}</td>
                             <td>{{ user.email }}</td>
@@ -131,13 +164,28 @@ function deleteUser(id) {
                                     <option value="cliente">Cliente</option>
                                 </select>
                             </td>
-                            <td v-if="user.rol == 'admin'"><button type="button" disabled class="unavailable">No disponible</button></td>
-                            <td v-else><button type="button" @click="openModal(user)" class="deleteButton"><img src="../assets/images/papelera.png"  alt="papelera"></button></td>
+                            <td v-if="user.rol == 'admin'"><button type="button" disabled class="unavailable">No
+                                    disponible</button></td>
+                            <td v-else><button type="button" @click="openModal(user)" class="deleteButton"><img
+                                        src="../assets/images/papelera.png" alt="papelera"></button></td>
                         </tr>
                     </tbody>
                 </table>
+                <nav aria-label="Paginacion de usuarios">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                            <a class="page-link" href="#" @click.prevent="previousPage">Previous</a>
+                        </li>
+                        <li class="page-item" v-for="page in totalPages" :key="page"
+                            :class="{ active: currentPage === page }">
+                            <a class="page-link" href="#" @click.prevent="currentPage = page">{{ page }}</a>
+                        </li>
+                        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                            <a class="page-link" href="#" @click.prevent="nextPage">Next</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
-
             <!--Contenido de la ventana de la Creacion de Rutas-->
             <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
                 <form class="container p-4 border rounded shadow">
@@ -152,6 +200,16 @@ function deleteUser(id) {
                             <input type="text" id="localidad" name="localidad" class="form-control"
                                 placeholder="Localización">
                         </div>
+                        <div class="col-md-6">
+                            <label for="longitud" class="form-label">Longitud:</label>
+                            <input type="text" id="longitud" name="longitud" class="form-control"
+                                placeholder="Localización">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="latitud" class="form-label">Latitud:</label>
+                            <input type="text" id="latitud" name="latitud" class="form-control"
+                                placeholder="Localización">
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -162,16 +220,19 @@ function deleteUser(id) {
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="precio" class="form-label">Precio:</label>
-                            <input type="number" min="0" id="precio" name="precio" class="form-control" placeholder="Precio">
-                        </div>
-                        <div class="col-md-6">
                             <label for="fecha" class="form-label">Fecha:</label>
                             <input type="date" id="fecha" name="fecha" class="form-control">
+                            <label for="hora" class="form-label">Hora:</label>
+                            <input type="time" id="hora" name="hora" class="form-control">
                         </div>
                         <div class="col-md-6">
                             <label for="foto" class="form-label">Inserte la url de la imagen de la ruta:</label>
                             <input type="text" id="foto" name="foto" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="guia" class="form-label">Asignar Guia:</label>
+                            <select id="guia" name="guia" class="form-control">
+                            </select>
                         </div>
                     </div>
 
@@ -188,10 +249,6 @@ function deleteUser(id) {
         </div>
     </div>
 
-    
-   
-
-
     <!-- Modal de confirmacion de eliminacion de usuario-->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -201,7 +258,8 @@ function deleteUser(id) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    El usuario <b>{{ selectedUser?.nombre }}</b> con el ID: <b>{{ selectedUser?.id }}</b> será eliminado permanentemente.
+                    El usuario <b>{{ selectedUser?.nombre }}</b> con el ID: <b>{{ selectedUser?.id }}</b> será eliminado
+                    permanentemente.
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -211,74 +269,57 @@ function deleteUser(id) {
             </div>
         </div>
     </div>
+
 </template>
 
 <style scoped>
-    /*
-    "aria-selected" es la clase que se le asigna automaticamente a la tab activa
-     !!important se usa para sobrescribir los estilos de Bootstrap.
-    */
-.nav-link{
-    border: 1px solid lightgray !important;
-    color: black;
-    transition: ease-out 0.2s;
-}
-.nav-link:hover{
-    background-color: lightgray;
-    color: black;
-    font-weight: bold;
-}
-.nav-tabs .nav-link[aria-selected="true"] {
-    background-color: rgb(101, 172, 101) !important;
-    color: white !important;
-    font-weight: bold;
-}
-
-#myTabContent {
-    margin: 2em 2em;
-    display: flex;
-    justify-content: center;
-}
-.deleteButton{
+.deleteButton {
     border: none;
     background-color: transparent;
 }
 
-.deleteButton img{
+.deleteButton img {
     width: 35px;
     transition: ease-in 0.2s;
- 
 }
-.deleteButton img:hover{
+
+.deleteButton img:hover {
     width: 2.5em;
 }
 
-.unavailable{
+.unavailable {
     border: none;
 }
 
 #userTable {
     text-align: center;
     align-items: center;
-    
 }
-#userTable select{
+
+#userTable select {
     border: none;
 }
+
+.table-responsive #userTable thead {
+    background-color: aqua !important;
+    /* No fufa */
+}
+
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
-    background-color: lightgray !important;
+    background-color: rgb(206, 247, 202) !important;
 }
-.table-hover tbody tr:hover td{
+
+.table-hover tbody tr:hover td {
     height: 6em;
 }
+
 .table-hover tbody tr:hover {
     border: 1px solid black;
 }
 
-.main{
+.main {
     margin-top: 2em;
     border-radius: 5px;
-    
 }
 </style>

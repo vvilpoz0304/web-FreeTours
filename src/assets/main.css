@@ -1,0 +1,31 @@
+/*
+  Estilo de las pestañas
+*/
+
+/*
+    "aria-selected" es la clase que se le asigna automaticamente a la tab activa
+    !important se usa para sobrescribir los estilos de Bootstrap.
+*/
+.nav-link {
+    border: 1px solid lightgray !important;
+    color: black;
+    transition: ease-out 0.2s;
+}
+
+.nav-link:hover {
+    background-color: lightgray;
+    color: black;
+    font-weight: bold;
+}
+
+.nav-tabs .nav-link[aria-selected="true"] {
+    background-color: rgb(101, 172, 101) !important;
+    color: white !important;
+    font-weight: bold;
+}
+
+#myTabContent {
+    margin: 2em 2em;
+    display: flex;
+    justify-content: center;
+}
