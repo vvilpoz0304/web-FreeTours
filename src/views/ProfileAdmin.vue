@@ -115,7 +115,6 @@ function previousPage() {
 ///////////////////////////
 
 // Mapa
-const address = ref('');
 let map = null;
 let marker = null;
 
@@ -135,25 +134,26 @@ function showMap() {
     })
 }
 
+onMounted(() => {
+    showMap(); // Mostramos el mapa una vez se haya montado el componente;
+});
+
+// Funcion para buscar una localizacion en el mapa;
 async function searchLocation(location) {
     const provider = new OpenStreetMapProvider();
     const results = await provider.search({ query: location }); // Llamamos a la funcion "OpenStreetMapProvider" de Leaflet con el metodo "search" pasandole la query "location" que son los datos obtenidos del formulario;
 
     if (results && results.length > 0) { // Comprobamos que haya habido resultados y que sean válidos
-        const coords = results[0];
-        map.setView(coords, 13);
+        const {x, y} = results[0];
+        map.setView([y, x], 13);
         if (marker) {
-            map.removeLayer(marker); // En caso de ya haber un marcador, lo eliminamos
+            map.removeLayer(marker);
         }
-        marker = L.marker(e.latlng).addTo(map); // Añadimos el nuevo marcador al mapa
-        formCreator.value.latitud = e.latlng.lat; // Redeclaramos la longitu y longitud seleccionada en el mapa
-        formCreator.value.longitud = e.latlng.lng;
+        marker = L.marker([y, x]).addTo(map);
+        formCreator.value.latitud = y; 
+        formCreator.value.longitud = x;
     }
 }
-
-onMounted(() => {
-    showMap();
-});
 
 let formCreator = ref({
     titulo: '',
@@ -178,6 +178,37 @@ function createRoute() {
     })
         .then(response => response.json())
         .catch(error => console.error('Error:', error));
+}
+
+// Validamos que los campos obligatorios esten rellenos;
+let valid = ref(false);
+ 
+function validForm(){ 
+    // if(formCreator.value.longitud.length != 0 || formCreator.value.latitud.length != 0 ||
+    // !isNaN(formCreator.value.longitud) || !isNaN(formCreator.value.latitud)){
+    //     map.setView([formCreator.value.latitud, formCreator.value.longitud], 13);
+    // }
+    if(formCreator.value.titulo.length == 0 || formCreator.value.localidad.length == 0 ||
+        formCreator.value.longitud.length == 0 || formCreator.value.latitud.length == 0 ||
+        isNaN(formCreator.value.longitud) || isNaN(formCreator.value.latitud) ||
+        formCreator.value.fecha.length == 0 || formCreator.value.hora.length == 0 ||
+        formCreator.value.foto.length == 0){
+            valid.value = false;
+        } else {
+            valid.value = true;
+        } 
+}
+
+//Comprobamos que la fecha introducida sea válida
+let invalidDate = ref(true);
+
+function validDate(){
+    let today = new Date();
+    let date = new Date(formCreator.value.fecha);
+
+    if(date < today){
+         
+    }
 }
 
 // Funcion para obtener los guias disponibles;
@@ -274,31 +305,31 @@ function getGuides() {
                         <div class="col-md-6">
                             <label for="titulo" class="form-label" aria-label="titulo">Título de la ruta:*</label>
                             <input type="text" id="titulo" name="titulo" class="form-control"
-                                placeholder="Título de la ruta" v-model="formCreator.titulo">
+                                placeholder="Título de la ruta" v-model="formCreator.titulo" @input="validForm()">
                         </div>
                         <div class="col-md-6">
                             <label for="localidad" class="form-label" aria-label="Localidad">Localidad:*</label>
                             <input type="text" id="localidad" name="localidad" class="form-control"
-                                placeholder="Localización" v-model="formCreator.localidad">
+                                placeholder="Localización" v-model="formCreator.localidad" @input="validForm()">
                         </div>
                     </div>
 
                     <div class="row mb-3 g-3">
                         <div class="col-md-6">
-                            <label for="longitud" class="form-label" aria-label="Longitud">Longitud:*</label>
+                            <label for="longitud" class="form-label" aria-label="Longitud" @input="validForm()">Longitud:*</label>
                             <input type="text" id="longitud" name="longitud" class="form-control" placeholder="Longitud"
-                                v-model="formCreator.longitud">
+                                v-model="formCreator.longitud" @input="validForm()">
                         </div>
                         <div class="col-md-6">
                             <label for="latitud" class="form-label" aria-label="Latitud">Latitud:*</label>
                             <input type="text" id="latitud" name="latitud" class="form-control" placeholder="Latitud"
-                                v-model="formCreator.latitud">
+                                v-model="formCreator.latitud" @input="validForm()">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="direccion" class="form-label" aria-label="Direccion">Buscar dirección:</label>
-                        <input v-model="address" name="direccion" @change="searchLocation($event.target.value)"
+                        <input name="direccion" @change="searchLocation($event.target.value)"
                             placeholder="Buscar dirección" class="form-control" />
                         <div id="map" style="height: 25em;" class="mt-2 border rounded"></div>
                     </div>
@@ -306,17 +337,18 @@ function getGuides() {
                     <div class="row mb-3 g-3">
                         <div class="col-md-6">
                             <label for="fecha" class="form-label" aria-label="Fecha">Fecha:*</label>
-                            <input type="date" id="fecha" name="fecha" class="form-control" v-model="formCreator.fecha"
+                            <input type="date" id="fecha" name="fecha" class="form-control" v-model="formCreator.fecha" @input="validForm()"
                                 @change="getGuides()">
+                            <p v-if="!invalidDate">La fecha debe ser posterior al día de hoy.</p>
                         </div>
                         <div class="col-md-6">
                             <label for="hora" class="form-label" aria-label="Hora">Hora:*</label>
-                            <input type="time" id="hora" name="hora" class="form-control" v-model="formCreator.hora">
+                            <input type="time" id="hora" name="hora" class="form-control" v-model="formCreator.hora" @input="validForm()">
                         </div>
                     </div>
 
                     <div class="row mb-3 g-3">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label for="guia" class="form-label" aria-label="Guia">Asignar Guía:</label>
                             <select id="guia" name="guia" class="form-control" v-model="formCreator.guia">
                                 <option v-for="guide in guideAvailable" :key="guide.id" :value="guide.id">
@@ -329,7 +361,7 @@ function getGuides() {
                     <div class="mb-3">
                         <label for="foto" class="form-label" aria-label="Imagen">Inserte la URL de la imagen de la ruta:*</label>
                         <input type="text" id="foto" name="foto" class="form-control" placeholder="URL de la imagen"
-                            v-model="formCreator.foto">
+                            v-model="formCreator.foto" @input="validForm()">
                         <label for="desc" class="form-label" aria-label="Descripcion">Descripción:</label>
                         <textarea id="desc" name="desc" class="form-control" rows="4"
                             placeholder="Descripción de la ruta" v-model="formCreator.descripcion"></textarea>
@@ -337,7 +369,7 @@ function getGuides() {
 
                     <div class="text-center">
                         <button type="submit" class="btn btn-primary w-50"
-                            @click.prevent="createRoute()">Enviar</button>
+                            @click.prevent="createRoute()" :disabled="!valid">Enviar</button>
                     </div>
                 </form>
             </div>
