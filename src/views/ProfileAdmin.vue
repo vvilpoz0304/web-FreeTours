@@ -3,7 +3,9 @@
 import router from '@/router';
 import { onMounted, ref, computed } from 'vue';
 import { Modal } from "bootstrap";
-
+import L from 'leaflet'; // Importamos Leaflet para poder utilizarlo en la creacion de rutas ;
+import 'leaflet/dist/leaflet.css'; // Estilo de LeafLet 
+import { OpenStreetMapProvider } from 'leaflet-geosearch'; // API de LeafLet
 
 //En caso de acceder sin estar logueado te redirige a Login;
 const props = defineProps({
@@ -112,6 +114,47 @@ function previousPage() {
 //// CREACION DE RUTAS ////
 ///////////////////////////
 
+// Mapa
+const address = ref('');
+let map = null;
+let marker = null;
+
+function showMap() {
+    map = L.map('map').setView([40.4168, -3.7038], 13); // Coords de Madrid por defecto
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    map.on('click', function (e) { // En caso de hacer click en el mapa
+        if (marker) {
+            map.removeLayer(marker); // En caso de ya haber un marcador, lo eliminamos
+        }
+        marker = L.marker(e.latlng).addTo(map); // Añadimos el nuevo marcador al mapa
+        formCreator.value.latitud = e.latlng.lat; // Redeclaramos la longitud y longitud seleccionada en el mapa
+        formCreator.value.longitud = e.latlng.lng;
+    })
+}
+
+async function searchLocation(location) {
+    const provider = new OpenStreetMapProvider();
+    const results = await provider.search({ query: location }); // Llamamos a la funcion "OpenStreetMapProvider" de Leaflet con el metodo "search" pasandole la query "location" que son los datos obtenidos del formulario;
+
+    if (results && results.length > 0) { // Comprobamos que haya habido resultados y que sean válidos
+        const coords = results[0];
+        map.setView(coords, 13);
+        if (marker) {
+            map.removeLayer(marker); // En caso de ya haber un marcador, lo eliminamos
+        }
+        marker = L.marker(e.latlng).addTo(map); // Añadimos el nuevo marcador al mapa
+        formCreator.value.latitud = e.latlng.lat; // Redeclaramos la longitu y longitud seleccionada en el mapa
+        formCreator.value.longitud = e.latlng.lng;
+    }
+}
+
+onMounted(() => {
+    showMap();
+});
+
 let formCreator = ref({
     titulo: '',
     localidad: '',
@@ -142,14 +185,14 @@ const guideAvailable = ref([]);
 
 function getGuides() {
     const fecha = formCreator.value.fecha;
-    
+
     fetch(`http://localhost/freetours/api.php/asignaciones?fecha=${fecha}`, {
         method: 'GET',
     })
         .then(response => response.json())
         .then(data => guideAvailable.value = data)
         .catch(error => console.error('Error:', error));
-        console.log(fecha);
+    console.log(fecha);
 }
 
 </script>
@@ -157,8 +200,7 @@ function getGuides() {
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
-                type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Gestion de
-                Usuarios</button>
+                type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Gestion de Usuarios</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane"
@@ -189,7 +231,7 @@ function getGuides() {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(user) in paginatedUsers" :key=user.id>
+                        <tr v-for="(user) in paginatedUsers" :key="user.id">
                             <td>{{ user.id }}</td>
                             <td>{{ user.nombre }}</td>
                             <td>{{ user.email }}</td>
@@ -227,62 +269,77 @@ function getGuides() {
             </div>
             <!--Contenido de la ventana de la Creacion de Rutas-->
             <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
-                <form class="container p-4 border rounded shadow">
-                    <div class="row mb-3">
+                <form class="p-4 border rounded shadow bg-light">
+                    <div class="row mb-3 g-3">
                         <div class="col-md-6">
-                            <label for="titulo" class="form-label">Título de la ruta:</label>
+                            <label for="titulo" class="form-label" aria-label="titulo">Título de la ruta:*</label>
                             <input type="text" id="titulo" name="titulo" class="form-control"
                                 placeholder="Título de la ruta" v-model="formCreator.titulo">
                         </div>
                         <div class="col-md-6">
-                            <label for="localidad" class="form-label">Localidad:</label>
+                            <label for="localidad" class="form-label" aria-label="Localidad">Localidad:*</label>
                             <input type="text" id="localidad" name="localidad" class="form-control"
                                 placeholder="Localización" v-model="formCreator.localidad">
                         </div>
+                    </div>
+
+                    <div class="row mb-3 g-3">
                         <div class="col-md-6">
-                            <label for="longitud" class="form-label">Longitud:</label>
-                            <input type="text" id="longitud" name="longitud" class="form-control"
-                                placeholder="Localización" v-model="formCreator.longitud">
+                            <label for="longitud" class="form-label" aria-label="Longitud">Longitud:*</label>
+                            <input type="text" id="longitud" name="longitud" class="form-control" placeholder="Longitud"
+                                v-model="formCreator.longitud">
                         </div>
                         <div class="col-md-6">
-                            <label for="latitud" class="form-label">Latitud:</label>
-                            <input type="text" id="latitud" name="latitud" class="form-control"
-                                placeholder="Localización" v-model="formCreator.latitud">
+                            <label for="latitud" class="form-label" aria-label="Latitud">Latitud:*</label>
+                            <input type="text" id="latitud" name="latitud" class="form-control" placeholder="Latitud"
+                                v-model="formCreator.latitud">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="desc" class="form-label">Descripción:</label>
-                        <textarea id="desc" name="desc" class="form-control" rows="3"
-                            placeholder="Descripción de la ruta" v-model="formCreator.descripcion"></textarea>
+                        <label for="direccion" class="form-label" aria-label="Direccion">Buscar dirección:</label>
+                        <input v-model="address" name="direccion" @change="searchLocation($event.target.value)"
+                            placeholder="Buscar dirección" class="form-control" />
+                        <div id="map" style="height: 25em;" class="mt-2 border rounded"></div>
                     </div>
 
-                    <div class="row mb-3">
+                    <div class="row mb-3 g-3">
                         <div class="col-md-6">
-                            <label for="fecha" class="form-label">Fecha:</label>
+                            <label for="fecha" class="form-label" aria-label="Fecha">Fecha:*</label>
                             <input type="date" id="fecha" name="fecha" class="form-control" v-model="formCreator.fecha"
                                 @change="getGuides()">
-                            <label for="hora" class="form-label">Hora:</label>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="hora" class="form-label" aria-label="Hora">Hora:*</label>
                             <input type="time" id="hora" name="hora" class="form-control" v-model="formCreator.hora">
                         </div>
+                    </div>
+
+                    <div class="row mb-3 g-3">
                         <div class="col-md-6">
-                            <label for="foto" class="form-label">Inserte la url de la imagen de la ruta:</label>
-                            <input type="text" id="foto" name="foto" class="form-control" placeholder="URL de la imagen"
-                                v-model="formCreator.foto">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="guia" class="form-label">Asignar Guia:</label>
+                            <label for="guia" class="form-label" aria-label="Guia">Asignar Guía:</label>
                             <select id="guia" name="guia" class="form-control" v-model="formCreator.guia">
-                                <option  v-for="guide in guideAvailable" :key="guide.id" :value="guide.id">Guia con id:{{ guide.id }}</option>
+                                <option v-for="guide in guideAvailable" :key="guide.id" :value="guide.id">
+                                    Guía con ID: {{ guide.id }}
+                                </option>
                             </select>
                         </div>
                     </div>
 
+                    <div class="mb-3">
+                        <label for="foto" class="form-label" aria-label="Imagen">Inserte la URL de la imagen de la ruta:*</label>
+                        <input type="text" id="foto" name="foto" class="form-control" placeholder="URL de la imagen"
+                            v-model="formCreator.foto">
+                        <label for="desc" class="form-label" aria-label="Descripcion">Descripción:</label>
+                        <textarea id="desc" name="desc" class="form-control" rows="4"
+                            placeholder="Descripción de la ruta" v-model="formCreator.descripcion"></textarea>
+                    </div>
+
                     <div class="text-center">
-                        <button type="submit" class="btn btn-primary" @click.prevent="createRoute()">Enviar</button>
+                        <button type="submit" class="btn btn-primary w-50"
+                            @click.prevent="createRoute()">Enviar</button>
                     </div>
                 </form>
-
             </div>
             <!--Contenido de la ventana de la cancelacion de rutas-->
             <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
@@ -311,7 +368,6 @@ function getGuides() {
             </div>
         </div>
     </div>
-
 </template>
 
 <style scoped>
@@ -344,7 +400,6 @@ function getGuides() {
 
 .table-responsive #userTable thead {
     background-color: aqua !important;
-    /* No fufa */
 }
 
 .table-hover tbody tr:hover td,
@@ -365,9 +420,9 @@ function getGuides() {
     background-color: #7ac58a;
 }
 
-.page-item .active .page-link {
-    background-color: red;
-    /* No fufa */
+.page-item.active .page-link {
+    border: none;
+    background-color: rgb(95, 132, 95);
 }
 
 .main {
