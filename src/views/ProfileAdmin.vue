@@ -6,7 +6,7 @@ import { Modal } from "bootstrap";
 import L from 'leaflet'; // Importamos Leaflet para poder utilizarlo en la creacion de rutas ;
 import 'leaflet/dist/leaflet.css'; // Estilo de LeafLet 
 import { OpenStreetMapProvider } from 'leaflet-geosearch'; // API de LeafLet
-import Swal from 'sweetalert2'; // Importamos SweetAlert2 para mostrar mensajes de confirmacion;
+import Swal from 'sweetalert2'; // Importamos SweetAlert2 para mostrar mensajes de confirmacion https://sweetalert2.github.io/;
 
 //En caso de acceder sin estar logueado te redirige a Login;
 const props = defineProps({
@@ -241,6 +241,8 @@ function validDate() {
 // Funcion para obtener los guias disponibles;
 const guideAvailable = ref([]);
 
+
+///////////////////// ARREGLAR (salen todos los guias independientemente de la fecha) ///////////////////////
 function getGuidesAvailable() {
     const fecha = formCreator.value.fecha;
 
@@ -251,6 +253,25 @@ function getGuidesAvailable() {
         .then(data => guideAvailable.value = data)
         .catch(error => console.error('Error:', error));
 }
+
+
+///////////////////////////////
+/// ADMINISTRACION DE RUTAS ///
+///////////////////////////////
+
+let routes = ref([]);
+// Conseguimos todas las rutas disponibles;
+
+async function getRoutes() {
+    try {
+        fetch('http://localhost/freetours/api.php/rutas')
+            .then(response => response.json())
+            .then(data => routes.value = data);
+    } catch (error) {
+        alert(`Error al obtener datos: ${error.message}`);
+    }
+}
+onMounted(getRoutes);
 
 </script>
 <template>
@@ -378,7 +399,8 @@ function getGuidesAvailable() {
                     <div class="row mb-3 g-3">
                         <div class="col-md-12">
                             <label for="guia" class="form-label" aria-label="Guia">Asignar Guía:</label>
-                            <select id="guia" name="guia" class="form-control" v-model="formCreator.guia" title="Guias disponibles en la fecha seleccionada">
+                            <select id="guia" name="guia" class="form-control" v-model="formCreator.guia"
+                                title="Guias disponibles en la fecha seleccionada">
                                 <option v-for="guide in guideAvailable" :key="guide.id" :value="guide.id">
                                     Guía con ID: {{ guide.id }}
                                 </option>
@@ -404,7 +426,26 @@ function getGuidesAvailable() {
             </div>
             <!--Contenido de la ventana de la cancelacion de rutas-->
             <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
-                Pestaña para la cancelacion de rutas
+                <main class="container rounded shadow p-3 w-100">
+                    <div class="card mb-5" v-for="route in routes" :key="route.id">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <img :src="route.foto" class="img-fluid rounded-start" :alt="route.titulo">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h2 class="card-title">{{ route.titulo }}</h2>
+                                    <h6 class="card-title">{{ route.localidad }}</h6>
+                                    <p class="card-text">
+                                        {{ route.descripcion }}
+                                    </p>
+                                    <button>Duplicar ruta</button>
+                                    <button>Cancelar Ruta</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
             </div>
         </div>
     </div>
