@@ -6,6 +6,7 @@ import { Modal } from "bootstrap";
 import L from 'leaflet'; // Importamos Leaflet para poder utilizarlo en la creacion de rutas ;
 import 'leaflet/dist/leaflet.css'; // Estilo de LeafLet 
 import { OpenStreetMapProvider } from 'leaflet-geosearch'; // API de LeafLet
+import Swal from 'sweetalert2'; // Importamos SweetAlert2 para mostrar mensajes de confirmacion;
 
 //En caso de acceder sin estar logueado te redirige a Login;
 const props = defineProps({
@@ -144,13 +145,13 @@ async function searchLocation(location) {
     const results = await provider.search({ query: location }); // Llamamos a la funcion "OpenStreetMapProvider" de Leaflet con el metodo "search" pasandole la query "location" que son los datos obtenidos del formulario;
 
     if (results && results.length > 0) { // Comprobamos que haya habido resultados y que sean válidos
-        const {x, y} = results[0];
+        const { x, y } = results[0];
         map.setView([y, x], 13);
         if (marker) {
             map.removeLayer(marker);
         }
         marker = L.marker([y, x]).addTo(map);
-        formCreator.value.latitud = y; 
+        formCreator.value.latitud = y;
         formCreator.value.longitud = x;
     }
 }
@@ -178,43 +179,69 @@ function createRoute() {
     })
         .then(response => response.json())
         .catch(error => console.error('Error:', error));
+
+    Swal.fire({
+        title: "¡Ruta creada!",
+        text: `La ruta en ${formCreator.value.titulo} ha sido creada correctamente.`,
+        icon: "success"
+    });
+
+    // Limpiamos los campos del formulario;
+    formCreator.value.titulo = '';
+    formCreator.value.localidad = '';
+    formCreator.value.longitud = '';
+    formCreator.value.latitud = '';
+    formCreator.value.descripcion = '';
+    formCreator.value.fecha = '';
+    formCreator.value.hora = '';
+    formCreator.value.foto = '';
+    formCreator.value.guia = '';
 }
 
 // Validamos que los campos obligatorios esten rellenos;
 let valid = ref(false);
- 
-function validForm(){ 
+
+function validForm() {
     // if(formCreator.value.longitud.length != 0 || formCreator.value.latitud.length != 0 ||
     // !isNaN(formCreator.value.longitud) || !isNaN(formCreator.value.latitud)){
     //     map.setView([formCreator.value.latitud, formCreator.value.longitud], 13);
     // }
-    if(formCreator.value.titulo.length == 0 || formCreator.value.localidad.length == 0 ||
+    validDate()
+    if (formCreator.value.titulo.length == 0 || formCreator.value.localidad.length == 0 ||
         formCreator.value.longitud.length == 0 || formCreator.value.latitud.length == 0 ||
         isNaN(formCreator.value.longitud) || isNaN(formCreator.value.latitud) ||
         formCreator.value.fecha.length == 0 || formCreator.value.hora.length == 0 ||
-        formCreator.value.foto.length == 0){
-            valid.value = false;
-        } else {
-            valid.value = true;
-        } 
+        formCreator.value.foto.length == 0 || !invalidDate.value) {
+        valid.value = false;
+    } else {
+        valid.value = true;
+    }
 }
 
 //Comprobamos que la fecha introducida sea válida
 let invalidDate = ref(true);
 
-function validDate(){
+function validDate() {
     let today = new Date();
     let date = new Date(formCreator.value.fecha);
 
-    if(date < today){
-         
+    if (date.getTime() < today.getTime()) { // La fecha introducida no puede ser anterior al dia de hoy;
+        invalidDate.value = false;
+    } else {
+        invalidDate.value = true;
+        const year = date.getFullYear();
+        const month = (date.getMonth() < 10 ? '0' : '') + date.getMonth() + 1; // En caso de que el mes sea un digito, le añadimos un 0 delante para evitar errores;
+        const day = (date.getDate() < 10 ? '0' : '') + date.getDate(); // Hacemos lo mismo con el dia
+
+        date = `${year}-${month}-${day}`
+        console.log(date)
     }
 }
 
 // Funcion para obtener los guias disponibles;
 const guideAvailable = ref([]);
 
-function getGuides() {
+function getGuidesAvailable() {
     const fecha = formCreator.value.fecha;
 
     fetch(`http://localhost/freetours/api.php/asignaciones?fecha=${fecha}`, {
@@ -223,7 +250,6 @@ function getGuides() {
         .then(response => response.json())
         .then(data => guideAvailable.value = data)
         .catch(error => console.error('Error:', error));
-    console.log(fecha);
 }
 
 </script>
@@ -316,7 +342,8 @@ function getGuides() {
 
                     <div class="row mb-3 g-3">
                         <div class="col-md-6">
-                            <label for="longitud" class="form-label" aria-label="Longitud" @input="validForm()">Longitud:*</label>
+                            <label for="longitud" class="form-label" aria-label="Longitud"
+                                @input="validForm()">Longitud:*</label>
                             <input type="text" id="longitud" name="longitud" class="form-control" placeholder="Longitud"
                                 v-model="formCreator.longitud" @input="validForm()">
                         </div>
@@ -337,20 +364,21 @@ function getGuides() {
                     <div class="row mb-3 g-3">
                         <div class="col-md-6">
                             <label for="fecha" class="form-label" aria-label="Fecha">Fecha:*</label>
-                            <input type="date" id="fecha" name="fecha" class="form-control" v-model="formCreator.fecha" @input="validForm()"
-                                @change="getGuides()">
+                            <input type="date" id="fecha" name="fecha" class="form-control" v-model="formCreator.fecha"
+                                @input="validForm()" @change="getGuidesAvailable()">
                             <p v-if="!invalidDate">La fecha debe ser posterior al día de hoy.</p>
                         </div>
                         <div class="col-md-6">
                             <label for="hora" class="form-label" aria-label="Hora">Hora:*</label>
-                            <input type="time" id="hora" name="hora" class="form-control" v-model="formCreator.hora" @input="validForm()">
+                            <input type="time" id="hora" name="hora" class="form-control" v-model="formCreator.hora"
+                                @input="validForm()">
                         </div>
                     </div>
 
                     <div class="row mb-3 g-3">
                         <div class="col-md-12">
                             <label for="guia" class="form-label" aria-label="Guia">Asignar Guía:</label>
-                            <select id="guia" name="guia" class="form-control" v-model="formCreator.guia">
+                            <select id="guia" name="guia" class="form-control" v-model="formCreator.guia" title="Guias disponibles en la fecha seleccionada">
                                 <option v-for="guide in guideAvailable" :key="guide.id" :value="guide.id">
                                     Guía con ID: {{ guide.id }}
                                 </option>
@@ -359,7 +387,8 @@ function getGuides() {
                     </div>
 
                     <div class="mb-3">
-                        <label for="foto" class="form-label" aria-label="Imagen">Inserte la URL de la imagen de la ruta:*</label>
+                        <label for="foto" class="form-label" aria-label="Imagen">Inserte la URL de la imagen de la
+                            ruta:*</label>
                         <input type="text" id="foto" name="foto" class="form-control" placeholder="URL de la imagen"
                             v-model="formCreator.foto" @input="validForm()">
                         <label for="desc" class="form-label" aria-label="Descripcion">Descripción:</label>
@@ -368,8 +397,8 @@ function getGuides() {
                     </div>
 
                     <div class="text-center">
-                        <button type="submit" class="btn btn-primary w-50"
-                            @click.prevent="createRoute()" :disabled="!valid">Enviar</button>
+                        <button type="submit" class="btn w-50" @click.prevent="createRoute()" :disabled="!valid"
+                            id="createButton" title="Enviar formulario">Enviar</button>
                     </div>
                 </form>
             </div>
@@ -432,6 +461,7 @@ function getGuides() {
 
 .table-responsive #userTable thead {
     background-color: aqua !important;
+    /*No fufa */
 }
 
 .table-hover tbody tr:hover td,
@@ -460,5 +490,10 @@ function getGuides() {
 .main {
     margin-top: 2em;
     border-radius: 5px;
+}
+
+#createButton {
+    background-color: #7ac58a;
+    border: none;
 }
 </style>
