@@ -14,7 +14,7 @@
 
 <style scoped>
 .fondo-buscador{
-  background-image: url("/src/assets/images/fondoBuscador.avif");
+  background-image: url("/images/fondoBuscador.avif");
   background-size: cover;
   height: 40vh;
 }

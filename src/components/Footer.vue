@@ -10,9 +10,9 @@
     </div>
     <div>
       <p id="iconos">
-        <a href=""><img src="../assets/images/instagram.png" alt="Instagram"></a>
-        <a href=""><img src="../assets/images/twitter.png" alt="X"></a>
-        <a href=""><img src="../assets/images/tiktok.png" alt="TikTok"></a>
+        <a href=""><img src="/images/instagram.png" alt="Instagram"></a>
+        <a href=""><img src="/images/twitter.png" alt="X"></a>
+        <a href=""><img src="/images/tiktok.png" alt="TikTok"></a>
       </p>
       <p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><span property="dct:title">Web
           Freetours 2ºDaw</span> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName"

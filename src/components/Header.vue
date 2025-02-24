@@ -22,7 +22,7 @@ function logOut() {
 <template>
     <header class="text-white  p-3">
         <div>
-            <img src="../assets/images/logo.png" alt="Logo">
+            <img src="/images/logo.png" alt="Logo">
             <h1>Yogui-ri</h1>
         </div>
         <nav class="navbar navbar-expand-lg navbar-light">
@@ -41,7 +41,7 @@ function logOut() {
                         <div class="dropdown">
                             <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
                                 data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="../assets/images/perfil.png" alt="Perfil">
+                                <img src="/images/perfil.png" alt="Perfil">
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                                 <li v-if="userAuth && rol === 'admin'">

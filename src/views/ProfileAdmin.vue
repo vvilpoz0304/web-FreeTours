@@ -165,7 +165,7 @@ let formCreator = ref({
     fecha: '',
     hora: '',
     foto: '',
-    guia: ''
+    guia_id: ''
 });
 
 // Funcion para crear una ruta
@@ -195,7 +195,7 @@ function createRoute() {
     formCreator.value.fecha = '';
     formCreator.value.hora = '';
     formCreator.value.foto = '';
-    formCreator.value.guia = '';
+    formCreator.value.guia_id = '';
 }
 
 // Validamos que los campos obligatorios esten rellenos;
@@ -243,9 +243,7 @@ const guideAvailable = ref([]);
 
 
 ///////////////////// ARREGLAR (salen todos los guias independientemente de la fecha) ///////////////////////
-function getGuidesAvailable() {
-    const fecha = formCreator.value.fecha;
-
+function getGuidesAvailable(fecha) {
     fetch(`http://localhost/freetours/api.php/asignaciones?fecha=${fecha}`, {
         method: 'GET',
     })
@@ -274,14 +272,13 @@ async function getRoutes() {
 onMounted(getRoutes);
 
 function deleteRoute(rutaId, rutaTitulo) {
-    const cancelIcon = '<img src="../assets/images/cancelRouteIcon.png">';
 
     Swal.fire({
         title: "¿Está seguro de que quiere eliminar está ruta?",
         text: "Una vez eliminada, no podrá recuperarla.",
-        imageUrl: "../assets/images/cancelRouteIcon.png", // Carga la imagen
-        imageWidth: 100, // Ajusta el tamaño
-        imageHeight: 100,
+        imageUrl: "/images/cancelRouteIcon.png", // Carga la imagen
+        imageWidth: 150, // Ajusta el tamaño
+        imageHeight: 150,
         showCancelButton: true,
         confirmButtonColor: "red",
         cancelButtonColor: "gray",
@@ -356,7 +353,7 @@ function deleteRoute(rutaId, rutaTitulo) {
                             <td v-if="user.rol == 'admin'"><button type="button" disabled class="unavailable">No
                                     disponible</button></td>
                             <td v-else><button type="button" @click="openModal(user)" class="deleteButton"><img
-                                        src="../assets/images/papelera.png" alt="papelera"></button></td>
+                                        src="/images/papelera.png" alt="papelera"></button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -416,7 +413,7 @@ function deleteRoute(rutaId, rutaTitulo) {
                         <div class="col-md-6">
                             <label for="fecha" class="form-label" aria-label="Fecha">Fecha:*</label>
                             <input type="date" id="fecha" name="fecha" class="form-control" v-model="formCreator.fecha"
-                                @input="validForm()" @change="getGuidesAvailable()">
+                                @input="validForm()" @change="getGuidesAvailable(formCreator.fecha)">
                             <p v-if="!invalidDate">La fecha debe ser posterior al día de hoy.</p>
                         </div>
                         <div class="col-md-6">
@@ -429,7 +426,7 @@ function deleteRoute(rutaId, rutaTitulo) {
                     <div class="row mb-3 g-3">
                         <div class="col-md-12">
                             <label for="guia" class="form-label" aria-label="Guia">Asignar Guía:</label>
-                            <select id="guia" name="guia" class="form-control" v-model="formCreator.guia"
+                            <select id="guia" name="guia" class="form-control" v-model="formCreator.guia_id"
                                 title="Guias disponibles en la fecha seleccionada">
                                 <option v-for="guide in guideAvailable" :key="guide.id" :value="guide.id">
                                     Guía con ID: {{ guide.id }}
@@ -455,9 +452,10 @@ function deleteRoute(rutaId, rutaTitulo) {
                 </form>
             </div>
             <!--Contenido de la ventana de la cancelacion de rutas-->
-            <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
-                <main class="container rounded shadow p-3 w-100">
-                    <div class="card mb-5" v-for="route in routes" :key="route.id">
+            <div class="tab-pane fade routesList" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab"
+                tabindex="0">
+                <main class="container rounded shadow p-3">
+                    <div class="card mb-5 routeCard" v-for="route in routes" :key="route.id">
                         <div class="row g-2">
                             <div class="col-md-3 image">
                                 <img :src="route.foto" class="img-fluid rounded-start imagenRuta" :alt="route.titulo">
@@ -466,16 +464,16 @@ function deleteRoute(rutaId, rutaTitulo) {
                                 <div class="card-body infoRoute">
                                     <div>
                                         <h2 class="card-title">{{ route.titulo }}</h2>
-                                        <h6 class="card-title">{{ route.localidad }}</h6>
+                                        <h6 class="card-title"><img src="/images/pin.png">{{ route.localidad }}</h6>
                                         <p class="card-text">
                                             {{ route.descripcion }}
                                         </p>
                                     </div>
                                     <div>
-                                        <button class="manageRoutes" id="">Duplicar ruta</button>
-                                        <button class="manageRoutes" id=""
-                                            @click="deleteRoute(route.id, route.titulo)">Cancelar
-                                            Ruta</button>
+                                        <button class="manageRoutesButton">Duplicar ruta</button>
+                                        <button type="button" class="manageRoutesButton">Asignar Guía</button>
+                                        <button class="manageRoutesButton"
+                                            @click="deleteRoute(route.id, route.titulo)">Cancelar Ruta</button>
                                     </div>
                                 </div>
                             </div>
@@ -574,6 +572,10 @@ function deleteRoute(rutaId, rutaTitulo) {
     border: none;
 }
 
+.routesList {
+    width: 100% !important;
+}
+
 .infoRoute {
     display: flex;
     justify-content: space-between;
@@ -604,10 +606,15 @@ function deleteRoute(rutaId, rutaTitulo) {
     height: 100%;
 }
 
-.manageRoutes {
+.routeCard {
+    height: 13em;
+    margin: 0.5em 0em;
+}
+
+.manageRoutesButton {
     border: none;
     padding: 0.5em 1em;
-    margin: 0em 0.5em;
+    margin: 1em 0.5em 0em 0.5em;
     border-radius: 5px;
     cursor: pointer;
 }
