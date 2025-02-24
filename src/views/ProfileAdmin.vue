@@ -273,6 +273,36 @@ async function getRoutes() {
 }
 onMounted(getRoutes);
 
+function deleteRoute(rutaId, rutaTitulo) {
+    const cancelIcon = '<img src="../assets/images/cancelRouteIcon.png">';
+
+    Swal.fire({
+        title: "¿Está seguro de que quiere eliminar está ruta?",
+        text: "Una vez eliminada, no podrá recuperarla.",
+        imageUrl: "../assets/images/cancelRouteIcon.png", // Carga la imagen
+        imageWidth: 100, // Ajusta el tamaño
+        imageHeight: 100,
+        showCancelButton: true,
+        confirmButtonColor: "red",
+        cancelButtonColor: "gray",
+        confirmButtonText: "Eliminar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: "Ruta eliminada correctamente",
+                text: "La ruta " + rutaTitulo + " ha sido eliminada correctamente.",
+                icon: "success"
+            });
+            fetch(`http://localhost/freetours/api.php/rutas?id=${rutaId}`, {
+                method: 'DELETE',
+            })
+                .then(response => response.json())
+                .then(data => console.log('Respuesta:', data))
+                .catch(error => console.error('Error:', error));
+        }
+    });
+}
+
 </script>
 <template>
     <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -429,18 +459,24 @@ onMounted(getRoutes);
                 <main class="container rounded shadow p-3 w-100">
                     <div class="card mb-5" v-for="route in routes" :key="route.id">
                         <div class="row g-2">
-                            <div class="col-md-3">
-                                <img :src="route.foto" class="img-fluid rounded-start" :alt="route.titulo">
+                            <div class="col-md-3 image">
+                                <img :src="route.foto" class="img-fluid rounded-start imagenRuta" :alt="route.titulo">
                             </div>
                             <div class="col-md-8">
-                                <div class="card-body">
-                                    <h2 class="card-title">{{ route.titulo }}</h2>
-                                    <h6 class="card-title">{{ route.localidad }}</h6>
-                                    <p class="card-text">
-                                        {{ route.descripcion }}
-                                    </p>
-                                    <button>Duplicar ruta</button>
-                                    <button>Cancelar Ruta</button>
+                                <div class="card-body infoRoute">
+                                    <div>
+                                        <h2 class="card-title">{{ route.titulo }}</h2>
+                                        <h6 class="card-title">{{ route.localidad }}</h6>
+                                        <p class="card-text">
+                                            {{ route.descripcion }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <button class="manageRoutes" id="">Duplicar ruta</button>
+                                        <button class="manageRoutes" id=""
+                                            @click="deleteRoute(route.id, route.titulo)">Cancelar
+                                            Ruta</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -536,5 +572,43 @@ onMounted(getRoutes);
 #createButton {
     background-color: #7ac58a;
     border: none;
+}
+
+.infoRoute {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    /* Permite que los elementos se acomoden en pantallas pequeñas */
+    padding: 1rem;
+}
+
+.imagenRuta {
+    width: 100%;
+    height: 12em;
+    object-fit: cover;
+    /* Recorta la imagen sin deformarla */
+    border-radius: 10px;
+}
+
+.col-md-3 .image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.manageRoutes {
+    border: none;
+    padding: 0.5em 1em;
+    margin: 0em 0.5em;
+    border-radius: 5px;
+    cursor: pointer;
 }
 </style>

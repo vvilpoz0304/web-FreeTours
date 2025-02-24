@@ -5,7 +5,7 @@ import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 
 
-const session = ref(localStorage.getItem("session"));
+const session = ref(JSON.parse(localStorage.getItem("session")));
 
 function updateDataSesion(user) {
   session.value = user;
