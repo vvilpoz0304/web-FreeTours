@@ -242,7 +242,6 @@ function validDate() {
 const guideAvailable = ref([]);
 
 
-///////////////////// ARREGLAR (salen todos los guias independientemente de la fecha) ///////////////////////
 function getGuidesAvailable(fecha) {
     fetch(`http://localhost/freetours/api.php/asignaciones?fecha=${fecha}`, {
         method: 'GET',
@@ -294,7 +293,7 @@ function deleteRoute(rutaId, rutaTitulo) {
                 method: 'DELETE',
             })
                 .then(response => response.json())
-                .then(data => console.log('Respuesta:', data))
+                .then(data => getRoutes())
                 .catch(error => console.error('Error:', error));
         }
     });
@@ -314,7 +313,7 @@ function deleteRoute(rutaId, rutaTitulo) {
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane"
-                type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Cancelacion de
+                type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Administracion de
                 Rutas</button>
         </li>
     </ul>
@@ -428,9 +427,11 @@ function deleteRoute(rutaId, rutaTitulo) {
                             <label for="guia" class="form-label" aria-label="Guia">Asignar Guía:</label>
                             <select id="guia" name="guia" class="form-control" v-model="formCreator.guia_id"
                                 title="Guias disponibles en la fecha seleccionada">
+                                <option value="">Seleccionar guia:</option>
                                 <option v-for="guide in guideAvailable" :key="guide.id" :value="guide.id">
                                     Guía con ID: {{ guide.id }}
                                 </option>
+                                <option value="">No asignar Guia</option>
                             </select>
                         </div>
                     </div>
@@ -465,15 +466,16 @@ function deleteRoute(rutaId, rutaTitulo) {
                                     <div>
                                         <h2 class="card-title">{{ route.titulo }}</h2>
                                         <h6 class="card-title"><img src="/images/pin.png">{{ route.localidad }}</h6>
+                                        <h6 class="card-title">Guia: {{ route.guia_nombre }}</h6>
                                         <p class="card-text">
                                             {{ route.descripcion }}
                                         </p>
                                     </div>
-                                    <div>
-                                        <button class="manageRoutesButton">Duplicar ruta</button>
-                                        <button type="button" class="manageRoutesButton">Asignar Guía</button>
+                                    <div class="btn-group mt-3">
+                                        <button class="manageRoutesButton" id="duplicateRoute">Duplicar ruta</button>
+                                        <button type="button" class="manageRoutesButton" id="asignRoute">Asignar Guía</button>
                                         <button class="manageRoutesButton"
-                                            @click="deleteRoute(route.id, route.titulo)">Cancelar Ruta</button>
+                                            @click="deleteRoute(route.id, route.titulo)" id="cancelRoute">Cancelar Ruta</button>
                                     </div>
                                 </div>
                             </div>
@@ -580,7 +582,7 @@ function deleteRoute(rutaId, rutaTitulo) {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    flex-wrap: wrap;
+    flex-wrap: wrap;    border-radius: 5px;
     /* Permite que los elementos se acomoden en pantallas pequeñas */
     padding: 1rem;
 }
@@ -614,8 +616,16 @@ function deleteRoute(rutaId, rutaTitulo) {
 .manageRoutesButton {
     border: none;
     padding: 0.5em 1em;
-    margin: 1em 0.5em 0em 0.5em;
-    border-radius: 5px;
     cursor: pointer;
+    transition: ease-in 0.25s;
+}
+#cancelRoute {
+    background-color: rgb(249, 55, 55);
+}
+#duplicateRoute {
+    background-color: yellow;
+}
+#asignRoute {
+    background-color: #7ac58a;
 }
 </style>
