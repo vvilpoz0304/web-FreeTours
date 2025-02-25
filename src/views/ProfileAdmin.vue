@@ -234,7 +234,6 @@ function validDate() {
         const day = (date.getDate() < 10 ? '0' : '') + date.getDate(); // Hacemos lo mismo con el dia
 
         date = `${year}-${month}-${day}`
-        console.log(date)
     }
 }
 
@@ -257,8 +256,8 @@ function getGuidesAvailable(fecha) {
 ///////////////////////////////
 
 let routes = ref([]);
-// Conseguimos todas las rutas disponibles;
 
+// Conseguimos todas las rutas disponibles;
 async function getRoutes() {
     try {
         fetch('http://localhost/freetours/api.php/rutas')
@@ -270,6 +269,7 @@ async function getRoutes() {
 }
 onMounted(getRoutes);
 
+// Funcion para eliminar una ruta;
 function deleteRoute(rutaId, rutaTitulo) {
 
     Swal.fire({
@@ -299,12 +299,78 @@ function deleteRoute(rutaId, rutaTitulo) {
     });
 }
 
+
+// Dupluicar ruta
+async function duplicateRoute(routeID, routeTitle, guideID) {
+    const { value: selectedGuide } = await Swal.fire({
+        imageUrl: "/images/duplicadoRutas.png",
+        imageWidth: 150,
+        imageHeight: 150,
+        title: "Duplicar ruta",
+        html: `<input type="date" id="fechaAlert" class="form-control">`,
+        didOpen: () => {
+            const dateAlert = document.getElementById("fechaAlert");
+            dateAlert.addEventListener("change", (event) => {
+                let selectedDate = new Date(event.target.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Asegura que la hora de 'today' sea 00:00:00 para comparaciones correctas
+
+                // Formateamos 'selectedDate' correctamente
+                const year = selectedDate.getFullYear();
+                const month = (selectedDate.getMonth() < 9 ? '0' : '') + (selectedDate.getMonth() + 1); // Corregimos el índice del mes
+                const day = (selectedDate.getDate() < 10 ? '0' : '') + selectedDate.getDate();
+
+                // Convertimos selectedDate a formato 'YYYY-MM-DD' para una comparación más simple
+                selectedDate = `${year}-${month}-${day}`;
+
+                console.log(selectedDate); // Muestra la fecha formateada
+
+                // Llamamos a la función para obtener los guías disponibles
+                getGuidesAvailable(selectedDate);
+
+                // Comprobamos si la fecha seleccionada es anterior a hoy
+                if (selectedDate < today) {
+                    Swal.fire({
+                        title: "Error",
+                        text: "La fecha seleccionada no puede ser anterior al día de hoy.",
+                        icon: "error"
+                    });
+                    dateAlert.value = ""; // Resetear el input
+                }
+            });
+        },
+        input: "select",
+        inputOptions: guideAvailable.value.reduce((acc, guide) => {
+            acc[guide.id] = `Guía con ID: ${guide.id}`;
+            return acc;
+        }, {}),
+        inputPlaceholder: "Seleccione un guía",
+        showCancelButton: true,
+        confirmButtonText: "Duplicar",
+        cancelButtonText: "Cancelar",
+        inputValidator: (value) => {
+            return new Promise((resolve) => {
+                if (value) {
+                    resolve();
+                } else {
+                    resolve("Debe seleccionar un guía.");
+                }
+            });
+        }
+    });
+
+    if (selectedGuide) {
+        Swal.fire(`Has seleccionado al guía con ID: ${selectedGuide}`);
+    }
+}
+
 </script>
 <template>
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
-                type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Gestion de Usuarios</button>
+                type="button" role="tab" aria-controls="home-tab-pane" onchange aria-selected="true">Gestion de
+                Usuarios</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane"
@@ -465,17 +531,21 @@ function deleteRoute(rutaId, rutaTitulo) {
                                 <div class="card-body infoRoute">
                                     <div>
                                         <h2 class="card-title">{{ route.titulo }}</h2>
-                                        <h6 class="card-title"><img src="/images/pin.png">{{ route.localidad }}</h6>
+                                        <h6 class="card-title"><img src="/images/pin.png">{{ route.localidad }}, Fecha:
+                                            {{ route.fecha }}</h6>
                                         <h6 class="card-title">Guia: {{ route.guia_nombre }}</h6>
                                         <p class="card-text">
                                             {{ route.descripcion }}
                                         </p>
                                     </div>
                                     <div class="btn-group mt-3">
-                                        <button class="manageRoutesButton" id="duplicateRoute">Duplicar ruta</button>
-                                        <button type="button" class="manageRoutesButton" id="asignRoute">Asignar Guía</button>
+                                        <button class="manageRoutesButton" id="duplicateRoute"
+                                            @click="duplicateRoute(route.id)">Duplicar ruta</button>
+                                        <button type="button" class="manageRoutesButton" id="asignRoute">Asignar
+                                            Guía</button>
                                         <button class="manageRoutesButton"
-                                            @click="deleteRoute(route.id, route.titulo)" id="cancelRoute">Cancelar Ruta</button>
+                                            @click="deleteRoute(route.id, route.titulo, route.guia_id)"
+                                            id="cancelRoute">Cancelar Ruta</button>
                                     </div>
                                 </div>
                             </div>
@@ -582,7 +652,8 @@ function deleteRoute(rutaId, rutaTitulo) {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    flex-wrap: wrap;    border-radius: 5px;
+    flex-wrap: wrap;
+    border-radius: 5px;
     /* Permite que los elementos se acomoden en pantallas pequeñas */
     padding: 1rem;
 }
@@ -619,12 +690,15 @@ function deleteRoute(rutaId, rutaTitulo) {
     cursor: pointer;
     transition: ease-in 0.25s;
 }
+
 #cancelRoute {
     background-color: rgb(249, 55, 55);
 }
+
 #duplicateRoute {
     background-color: yellow;
 }
+
 #asignRoute {
     background-color: #7ac58a;
 }
