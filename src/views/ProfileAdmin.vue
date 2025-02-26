@@ -425,6 +425,38 @@ function duplicateRoute(route) {
     modalInstanceDuplicate.hide();
 }
 
+let modalInstanceAssign = null;
+let selectedRouteAssign = ref(null);
+onMounted(() => {
+    modalInstanceAssign = new Modal(document.getElementById("modalassign"));
+});
+
+const asignacionData = ref({
+        ruta_id: '', // ID de la ruta
+        guia_id: ''  // ID del guía
+    }
+);
+
+function openModalAssign(route) {
+    asignacionData.value.ruta_id = route.id;
+    getGuidesAvailable(route.fecha);
+    modalInstanceAssign.show();
+}
+
+function createGuideAssignation() {
+
+    fetch('http://localhost/freetours/api.php/asignaciones', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(asignacionData)
+    })
+        .then(response => response.json())
+        .then(data => getRoutes())
+        .catch(error => console.error('Error:', error));
+}
+
 </script>
 <template>
     <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -603,7 +635,8 @@ function duplicateRoute(route) {
                                         <button class="manageRoutesButton" id="duplicateRoute"
                                             @click="openModalDuplication(route)">Duplicar
                                             ruta</button>
-                                        <button type="button" class="manageRoutesButton" id="asignRoute">Asignar
+                                        <button type="button" class="manageRoutesButton" id="asignRoute"
+                                            @click="openModalAssign(route)">Asignar
                                             Guía</button>
                                         <button class="manageRoutesButton"
                                             @click="deleteRoute(route.id, route.titulo, route.guia_id)"
@@ -693,6 +726,38 @@ function duplicateRoute(route) {
             </div>
         </div>
     </div>
+    <!-- Modal de Asignacion de Guias -->
+    <div class="modal fade" tabindex="-1" id="modalassign" aria-labelledby="modalAssignLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title">Asigne un guía:</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body text-center">
+                    <div class="d-flex justify-content-center mb-4">
+                        <img src="/images/asignacion.png" alt="Asignación" width="150px" height="150px">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="guia" class="form-label">Asignar Guía:</label>
+                        <select id="guia" name="guia" class="form-control"
+                            title="Guias disponibles en la fecha seleccionada" v-model="asignacionData.guia_id">
+                            <option v-for="guide in guideAvailable" :key="guide.id" :value="guide.id">
+                                Guía con ID: {{ guide.id }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" @click="createGuideAssignation()">Guardar cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </template>
 
@@ -722,11 +787,6 @@ function duplicateRoute(route) {
 
 #userTable select {
     border: none;
-}
-
-.table-responsive #userTable thead {
-    background-color: aqua !important;
-    /*No fufa */
 }
 
 .table-hover tbody tr:hover td,
