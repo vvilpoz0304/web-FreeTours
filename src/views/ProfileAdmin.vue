@@ -180,11 +180,23 @@ function createRoute() {
     })
         .then(response => response.json())
         .catch(error => console.error('Error:', error));
-
+    let timerInterval; // Declaramos el intervalo de tiempo para el mensaje de confirmacion;
     Swal.fire({
         title: "¡Ruta creada!",
         text: `La ruta en ${formCreator.value.titulo} ha sido creada correctamente.`,
-        icon: "success"
+        icon: "success",
+        timer: 2000,
+        timerProgressBar: true,
+        didOpen: () => {
+            Swal.showLoading();
+            const timer = Swal.getPopup().querySelector("b");
+            timerInterval = setInterval(() => {
+                timer.textContent = `${Swal.getTimerLeft()}`;
+            }, 100);
+        },
+        willClose: () => {
+            clearInterval(timerInterval);
+        }
     });
     invalidDate.value = true;
 
@@ -198,6 +210,8 @@ function createRoute() {
     formCreator.value.hora = '';
     formCreator.value.foto = '';
     formCreator.value.guia_id = '';
+
+    getRoutes(); // Actualizamos las rutas;
 }
 
 // Validamos que los campos obligatorios esten rellenos;
@@ -215,7 +229,6 @@ function validForm() {
         formCreator.value.fecha.length == 0 || formCreator.value.hora.length == 0 ||
         formCreator.value.foto.length == 0 || !invalidDate.value) {
         valid.value = false;
-
     } else {
         valid.value = true;
     }
@@ -228,23 +241,16 @@ function validDate() {
     let today = new Date();
     let date = new Date(formCreator.value.fecha);
 
-    if (date.getTime() > date.getTime() || !newRouteDuplicated.value.hora() < today.getTime()) { // La fecha introducida no puede ser anterior al dia de hoy;
+    if (today.getTime() > date.getTime() || formCreator.value.hora < today.getTime()) { // La fecha introducida no puede ser anterior al dia de hoy;
         invalidDate.value = false;
     } else {
         invalidDate.value = true;
-        //const year = date.getFullYear();
-        //const month = (date.getMonth() < 10 ? '0' : '') + date.getMonth() + 1; // En caso de que el mes sea un digito, le añadimos un 0 delante para evitar errores;
-        //const day = (date.getDate() < 10 ? '0' : '') + date.getDate(); // Hacemos lo mismo con el dia
-        //
-        //date = `${year}-${month}-${day}`
     }
-    console.log(date);
 }
 
 
 // Funcion para obtener los guias disponibles;
 const guideAvailable = ref([]);
-
 
 function getGuidesAvailable(fecha) {
     fetch(`http://localhost/freetours/api.php/asignaciones?fecha=${fecha}`, {
@@ -289,10 +295,23 @@ function deleteRoute(rutaId, rutaTitulo) {
         confirmButtonText: "Eliminar"
     }).then((result) => {
         if (result.isConfirmed) {
+            let timerInterval;
             Swal.fire({
                 title: "Ruta eliminada correctamente",
                 text: "La ruta " + rutaTitulo + " ha sido eliminada correctamente.",
-                icon: "success"
+                icon: "success",
+                timer: 2000,
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading();
+                    const timer = Swal.getPopup().querySelector("b");
+                    timerInterval = setInterval(() => {
+                        timer.textContent = `${Swal.getTimerLeft()}`;
+                    }, 100);
+                },
+                willClose: () => {
+                    clearInterval(timerInterval);
+                }
             });
             fetch(`http://localhost/freetours/api.php/rutas?id=${rutaId}`, {
                 method: 'DELETE',
@@ -306,7 +325,7 @@ function deleteRoute(rutaId, rutaTitulo) {
 
 // Declaramos e instanciamos el modal para la duplicacion de rutas;
 let modalInstanceDuplicate = null;
-let route = ref(null)
+let selectedRoute = ref(null)
 onMounted(() => {
     modalInstanceDuplicate = new Modal(document.getElementById("modalduplicate"));
 });
@@ -324,24 +343,86 @@ const newRouteDuplicated = ref({
     guia_id: ''
 });
 
-const invalidDateDuplicated  = ref(false);
+const invalidDateDuplicated = ref(false);
+const routeSelected = ref(null);
 
-function validDateDuplicate(){
+function validDateDuplicate() {
     let today = new Date();
+    today.setHours(0, 0, 0, 0); // Asegurar que today no tenga horas
+
     let date = new Date(newRouteDuplicated.value.fecha);
 
-    if(today.getTime() > date.getTime() || !newRouteDuplicated.value.hora){
+    // Verificamos si la fecha es anterior a hoy o si la hora es nula/vacía
+    if (date < today || !newRouteDuplicated.value.hora || newRouteDuplicated.value.hora.trim() === '' || newRouteDuplicated.value.hora == undefined) {
         invalidDateDuplicated.value = true;
-    } else invalidDateDuplicated.value = false;
+    } else {
+        invalidDateDuplicated.value = false;
+    }
 }
 
 // Duplicar ruta
-function abrirModalDuplicacion(route) {
+function openModalDuplication(route) {
+    selectedRoute.value = route;
     modalInstanceDuplicate.show();
 }
+onMounted(() => {
+    const modalElement = document.getElementById("modalduplicate");
 
-function duplicateRoute(){
+    if (modalElement) {
+        modalElement.addEventListener("hidden.bs.modal", () => {
+            newRouteDuplicated.value.fecha = "";
+            newRouteDuplicated.value.hora = "";
+            newRouteDuplicated.value.guia_id = "";
+            invalidDateDuplicated.value = false;
+        });
+    }
+});
 
+
+function duplicateRoute(route) {
+    // Asignamos los valores de la ruta seleccionada a la nueva ruta que se va a duplicar;
+    newRouteDuplicated.value.titulo = route.titulo;
+    newRouteDuplicated.value.localidad = route.localidad;
+    newRouteDuplicated.value.longitud = route.longitud;
+    newRouteDuplicated.value.latitud = route.latitud;
+    newRouteDuplicated.value.descripcion = route.descripcion;
+    newRouteDuplicated.value.foto = route.foto;
+
+    let timerInterval;
+    fetch('http://localhost/freetours/api.php/rutas', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newRouteDuplicated.value)
+    })
+        .then(response => response.json())
+        .then(data => Swal.fire({
+            title: "¡Ruta duplicada!",
+            text: "La ruta ha sido duplicada correctamente.",
+            icon: "success",
+            timer: 2000,
+            timerProgressBar: true,
+            didOpen: () => {
+                Swal.showLoading();
+                const timer = Swal.getPopup().querySelector("b");
+                timerInterval = setInterval(() => {
+                    timer.textContent = `${Swal.getTimerLeft()}`;
+                }, 100);
+            },
+            willClose: () => {
+                clearInterval(timerInterval);
+            }
+        }))
+        .catch(error => Swal.fire({
+            icon: "error",
+            title: "Ha ocurrido un error",
+            text: "No ha sido posible duplicar la ruta. Por favor, inténtelo de nuevo.",
+            //footer: '<a href="#">Why do I have this issue?</a>'
+        })
+        );
+    getRoutes();
+    modalInstanceDuplicate.hide();
 }
 
 </script>
@@ -520,7 +601,7 @@ function duplicateRoute(){
                                     </div>
                                     <div class="btn-group mt-3">
                                         <button class="manageRoutesButton" id="duplicateRoute"
-                                            @click="duplicateRoute(route.titulo, route.localidad, route.longitud, route.latitud, route.descripcion, route.foto, route.id, route.guide_id)">Duplicar
+                                            @click="openModalDuplication(route)">Duplicar
                                             ruta</button>
                                         <button type="button" class="manageRoutesButton" id="asignRoute">Asignar
                                             Guía</button>
@@ -560,46 +641,59 @@ function duplicateRoute(){
 
     <!-- Modal de duplicacion de rutas -->
     <div class="modal fade" id="modalduplicate" tabindex="-1" aria-labelledby="duplicateModal" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="duplicateModal">Duplicado de Rutas</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class=""><img src="/images/duplicadoRutas.png" width="100px"></div>
-            </div>
-
-            <div class="row mb-3 g-3">
-                <div class="col-md-6">
-                    <label for="fecha" class="form-label" aria-label="Fecha">Fecha:*</label>
-                    <input type="date" id="fecha" name="fecha" class="form-control" v-model="newRouteDuplicated.fecha"
-                        @change="getGuidesAvailable(newRouteDuplicated.fecha), validDateDuplicate()">
-                    <p v-if="invalidDateDuplicated">La fecha debe ser posterior al día de hoy.</p>
+        <div class="modal-dialog">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="duplicateModal">Duplicado de Rutas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="col-md-6">
-                    <label for="hora" class="form-label" aria-label="Hora">Hora:*</label>
-                    <input type="time" id="hora" name="hora" class="form-control" v-model="newRouteDuplicated.hora">
-                </div>
-            </div>
-            <p>{{  }}</p>
-            <div class="col-md-12">
-                <label for="guia" class="form-label" aria-label="Guia">Asignar Guía:</label>
-                <select id="guia" name="guia" class="form-control"
-                    title="Guias disponibles en la fecha seleccionada" v-model="newRouteDuplicated.guia_id">
-                    <option v-for="guide in guideAvailable" :key="guide.id" :value="guide.id" :disabled="invalidDateDuplicated">
-                        Guía con ID: {{ guide.id }}
-                    </option>
-                </select>
-            </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" @click="duplicateRoute">Duplicar</button>
+                <div class="modal-body text-center">
+                    <div class="d-flex justify-content-center mb-4">
+                        <img src="/images/duplicadoRutas.png" width="150px" height="150px">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="fecha" class="form-label" aria-label="Fecha">Fecha:*</label>
+                            <input type="date" id="fecha" name="fecha" class="form-control"
+                                v-model="newRouteDuplicated.fecha"
+                                @change="getGuidesAvailable(newRouteDuplicated.fecha), validDateDuplicate()">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="hora" class="form-label" aria-label="Hora">Hora:*</label>
+                            <input type="time" id="hora" name="hora" class="form-control"
+                                v-model="newRouteDuplicated.hora" @change="validDateDuplicate()">
+                        </div>
+                    </div>
+
+                    <p v-if="invalidDateDuplicated" class="text-danger text-center">
+                        La fecha debe ser posterior al día de hoy. Introducir hora obligatoria.
+                    </p>
+
+                    <div class="col-md-12 mb-3">
+                        <label for="guia" class="form-label" aria-label="Guia">Asignar Guía:</label>
+                        <select id="guia" name="guia" class="form-control"
+                            title="Guias disponibles en la fecha seleccionada" v-model="newRouteDuplicated.guia_id">
+                            <option v-for="guide in guideAvailable" :key="guide.id" :value="guide.id"
+                                :disabled="invalidDateDuplicated">
+                                Guía con ID: {{ guide.id }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" :disabled="invalidDateDuplicated"
+                        @click="duplicateRoute(selectedRoute)">
+                        Duplicar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
 </template>
 
 <style scoped>
