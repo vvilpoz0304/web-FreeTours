@@ -427,34 +427,52 @@ function duplicateRoute(route) {
 
 let modalInstanceAssign = null;
 let selectedRouteAssign = ref(null);
-onMounted(() => {
-    modalInstanceAssign = new Modal(document.getElementById("modalassign"));
-});
 
 const asignacionData = ref({
-        ruta_id: '', // ID de la ruta
-        guia_id: ''  // ID del guía
-    }
-);
+    ruta_id: "",
+    guia_id: ""
+});
 
+onMounted(() => {
+    const modalElement = document.getElementById("modalassign");
+    modalInstanceAssign = new Modal(modalElement);
+
+    // Limpiar formulario cuando se cierre el modal
+    modalElement.addEventListener("hidden.bs.modal", () => {
+        asignacionData.value.ruta_id = "";
+        asignacionData.value.guia_id = "";
+    });
+});
+
+// Abre el modal y obtiene los guías disponibles
 function openModalAssign(route) {
     asignacionData.value.ruta_id = route.id;
-    getGuidesAvailable(route.fecha);
+
+    if (route.fecha) {
+        getGuidesAvailable(route.fecha);
+    } else {
+        console.warn("Fecha no válida para obtener guías disponibles.");
+    }
+
     modalInstanceAssign.show();
 }
 
+// Crea la asignación y cierra el modal
 function createGuideAssignation() {
-
-    fetch('http://localhost/freetours/api.php/asignaciones', {
-        method: 'POST',
+    fetch("http://localhost/freetours/api.php/asignaciones", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json"
         },
-        body: JSON.stringify(asignacionData)
+        body: JSON.stringify(asignacionData.value)
     })
         .then(response => response.json())
-        .then(data => getRoutes())
-        .catch(error => console.error('Error:', error));
+        .then(data => {
+            console.log("Asignación creada:", data);
+            getRoutes(); // Actualizar rutas después de la asignación
+            modalInstanceAssign.hide(); // Cerrar modal después de guardar
+        })
+        .catch(error => console.error("Error:", error));
 }
 
 </script>
