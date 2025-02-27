@@ -76,7 +76,8 @@ async function logIn() { // Funcion que comprueba si los datos introducidos corr
             localStorage.setItem("session", JSON.stringify(userFound));
 
             emit("sessionStarted",
-                {nombre: userFound.nombre,
+                {id: userFound.id,
+                nombre: userFound.nombre,
                 rol: userFound.rol})
             error.value = '';
 
