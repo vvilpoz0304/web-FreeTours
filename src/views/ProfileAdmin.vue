@@ -344,7 +344,6 @@ const newRouteDuplicated = ref({
 });
 
 const invalidDateDuplicated = ref(false);
-const routeSelected = ref(null);
 
 function validDateDuplicate() {
     let today = new Date();

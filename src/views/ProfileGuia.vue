@@ -48,65 +48,68 @@ onMounted(() => {
                 tabindex="0">
 
                 <!-- Acordeón -->
-                <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
-                    tabindex="0">
+                <div class="accordion" id="accordionExample">
 
-                    <!-- Acordeón de rutas asignadas -->
-                    <div class="accordion" id="accordionExample">
+                    <div v-for="route in routesAssigned" :key="route.ruta_id" class="accordion-item">
 
-                        <div v-for="route in routesAssigned" :key="route.ruta_id" class="accordion-item">
+                        <!-- Título del acordeón -->
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed d-flex align-items-center p-0 border-0"
+                                type="button" data-bs-toggle="collapse"
+                                :data-bs-target="'#collapse-' + route.ruta_id" aria-expanded="false"
+                                :aria-controls="'collapse-' + route.ruta_id">
 
-                            <!-- Título del acordeón -->
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed d-flex align-items-center p-0 border-0"
-                                    type="button" data-bs-toggle="collapse"
-                                    :data-bs-target="'#collapse-' + route.ruta_id" aria-expanded="false"
-                                    :aria-controls="'collapse-' + route.ruta_id">
-
-                                    <!-- Contenedor de imagen y texto -->
-                                    <div class="d-flex align-items-center w-100">
-                                        <img :src="route.ruta_foto" alt="Imagen de la ruta" class="route-img">
-                                        <strong class="ms-3">{{ route.ruta_titulo }}</strong>
-                                    </div>
-
-                                </button>
-                            </h2>
-
-
-
-                            <!-- Contenido colapsable -->
-                            <div :id="'collapse-' + route.ruta_id" class="accordion-collapse collapse"
-                                data-bs-parent="#accordionExample">
-                                <div class="accordion-body">
-                                    <p><strong>Fecha:</strong> {{ route.ruta_fecha }} | <strong>Hora:</strong> {{
-                                        route.ruta_hora }}</p>
-                                    <p><strong>Localización:</strong> {{ route.ruta_localidad }}</p>
-                                    <p><strong>Descripción:</strong> {{ route.ruta_descripcion }}</p>
+                                <!-- Contenedor de imagen y texto -->
+                                <div class="d-flex align-items-center w-100">
+                                    <img :src="route.ruta_foto" alt="Imagen de la ruta" class="route-img img-fluid">
+                                    <strong class="ms-3 fs-3">{{ route.ruta_titulo }}</strong>
                                 </div>
+
+                            </button>
+                        </h2>
+
+                        <!-- Contenido colapsable -->
+                        <div :id="'collapse-' + route.ruta_id" class="accordion-collapse collapse"
+                            data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <p><strong>Fecha:</strong> {{ route.ruta_fecha }} | <strong>Hora:</strong> {{
+                                    route.ruta_hora }}</p>
+                                <p><strong>Localización:</strong> {{ route.ruta_localidad }}</p>
+                                <p><strong>Descripción:</strong> {{ route.ruta_descripcion }}</p>
                             </div>
+                        </div>
 
-                        </div> <!-- Fin de cada item del acordeón -->
+                    </div> <!-- Fin de cada item del acordeón -->
 
-                    </div> <!-- Fin del acordeón -->
-
-                </div> <!-- Fin del tab-pane -->
+                </div> <!-- Fin del acordeón -->
 
             </div>
         </div>
     </div>
 </template>
+
 <style scoped>
 .route-img {
-    width: 13em;
-    height: 10em;
+    width: 100%;
+    max-width: 13em;
+    height: auto;
     object-fit: cover;
     border-radius: 5px;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
 }
+
 .accordion-item {
-    width: 100%; /* Asegura que el contenido ocupa todo el botón */
+    width: 100%;
     border: 1px solid black;
 }
 
+.accordion-button {
+    width: 100%;
+    max-width: 75em;
+}
+
+.accordion-button::after {
+    margin: 0em 1em;
+}
 </style>
