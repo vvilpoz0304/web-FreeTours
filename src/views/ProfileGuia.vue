@@ -50,23 +50,25 @@ onMounted(() => {
                 <!-- Acordeón -->
                 <div class="accordion" id="accordionExample">
 
-                    <div v-for="route in routesAssigned" :key="route.ruta_id" class="accordion-item">
+                    <div v-for="route in routesAssigned" :key="route.ruta_id"
+                        class="accordion-item shadow-sm mb-1 border top bg-white rounded hover-shadow w-100">
 
                         <!-- Título del acordeón -->
-                        <h2 class="accordion-header">
+                        <h3 class="accordion-header">
                             <button class="accordion-button collapsed d-flex align-items-center p-0 border-0"
-                                type="button" data-bs-toggle="collapse"
-                                :data-bs-target="'#collapse-' + route.ruta_id" aria-expanded="false"
-                                :aria-controls="'collapse-' + route.ruta_id">
+                                type="button" data-bs-toggle="collapse" :data-bs-target="'#collapse-' + route.ruta_id"
+                                aria-expanded="false" :aria-controls="'collapse-' + route.ruta_id">
 
                                 <!-- Contenedor de imagen y texto -->
                                 <div class="d-flex align-items-center w-100">
-                                    <img :src="route.ruta_foto" alt="Imagen de la ruta" class="route-img img-fluid">
-                                    <strong class="ms-3 fs-3">{{ route.ruta_titulo }}</strong>
+                                    <img :src="route.ruta_foto" alt="Imagen de la ruta"
+                                        class="route-img img-fluid fixed-img rounded-end">
+                                    <strong class="ms-3 fs-4">{{ route.ruta_titulo }}</strong>
                                 </div>
 
+
                             </button>
-                        </h2>
+                        </h3>
 
                         <!-- Contenido colapsable -->
                         <div :id="'collapse-' + route.ruta_id" class="accordion-collapse collapse"
@@ -89,27 +91,29 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.route-img {
-    width: 100%;
-    max-width: 13em;
-    height: auto;
+.fixed-img {
+    width: 200px;
+    height: 150px;
     object-fit: cover;
-    border-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-}
-
-.accordion-item {
-    width: 100%;
-    border: 1px solid black;
-}
-
-.accordion-button {
-    width: 100%;
-    max-width: 75em;
 }
 
 .accordion-button::after {
     margin: 0em 1em;
+}
+.accordion-button::after {
+    background-image: url("/images/inf.png") !important;
+    /*Sustituyo la flecha del acordeon por el icono de informacion */
+}
+
+/* Efecto de elevacion de las tarjetas */
+.hover-shadow {
+    transition: all 0.4s ease-in-out;
+    /* Aplica el efecto al poner y quitar el raton */
+}
+
+.hover-shadow:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+    transform: translateY(-5px);
+    /* Eleva la tarjeta */
 }
 </style>

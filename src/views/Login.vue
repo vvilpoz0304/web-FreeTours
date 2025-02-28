@@ -81,7 +81,7 @@ async function logIn() { // Funcion que comprueba si los datos introducidos corr
                 rol: userFound.rol})
             error.value = '';
 
-            router.push("/home") // Redirige a la vista "home"
+            router.push("/") // Redirige a la vista "home"
         } else {
             error.value = 'Usuario o contraseña incorrectos';
         }

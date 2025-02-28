@@ -31,7 +31,7 @@ function logOut() {
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
                         <a class="nav-link">
-                            <RouterLink to="/home">Home</RouterLink>
+                            <RouterLink to="/">Home</RouterLink>
                         </a>
                     </li>
                     <li class="nav-item">
