@@ -53,7 +53,7 @@ rol.value != 'admin' ? router.push(`/${rol.value}`) : null;
                 <RouteCreator :userAuth="session"></RouteCreator>
             </div>
             <!--Contenido de la ventana de la cancelacion de rutas-->
-            <div class="tab-pane fade routesList" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab"
+            <div class="tab-pane fade routesList show w-75" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab"
                 tabindex="0">
                 <RoutesManagement :userAuth="session"></RoutesManagement>
             </div>

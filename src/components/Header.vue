@@ -1,70 +1,75 @@
 <script setup>
 import router from "@/router";
-import { ref, computed } from "vue"
+import { computed } from "vue";
 
-const emit = defineEmits(["sessionClosed"])
+const emit = defineEmits(["sessionClosed"]);
 
 const props = defineProps({
     userAuth: Object
 });
 
-//Comprobamos el rol del usuario logueado;
-const rol = computed(() => props.userAuth ? props.userAuth.rol : null); //Utilizamos computed para que se actualice el valor de rol cuando cambie el valor de userAuth
+// Computed para el rol del usuario
+const rol = computed(() => props.userAuth ? props.userAuth.rol : null);
 
-// Funcion para cerrar la sesion;
+// Función para cerrar sesión
 function logOut() {
     emit("sessionClosed", null);
-    router.push({ name: "home" })
+    router.push({ name: "home" });
 }
-
 </script>
 
 <template>
-    <header class="text-white  p-3">
-        <div>
-            <img src="/images/logo.png" alt="Logo">
-            <h1>Yogui-ri</h1>
-        </div>
-        <nav class="navbar navbar-expand-lg navbar-light">
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link">
-                            <RouterLink to="/">Home</RouterLink>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Quiénes somos</a>
-                    </li>
-                    <li class="nav-item">
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="/images/perfil.png" alt="Perfil">
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <li v-if="userAuth && rol === 'admin'">
-                                    <RouterLink class="dropdown-item" to="/admin">Administrar</RouterLink>
-                                </li>
-                                <li v-else-if="userAuth && rol === 'guia'">
-                                    <RouterLink class="dropdown-item" to="/guia">Mi guia</RouterLink>
-                                </li>
-                                <li v-else-if="userAuth && rol === 'cliente'">
-                                    <RouterLink class="dropdown-item" to="/cliente">Mi usuario</RouterLink>
-                                </li>
-                                <li v-else>
-                                    <RouterLink class="dropdown-item" to="/login">Iniciar Sesión</RouterLink>
-                                </li>
-                                <li v-if="userAuth">
-                                    <a class="dropdown-item" @click="logOut">Cerrar Sesión</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                </ul>
+    <header class="text-white p-3">
+        <div class="container d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <img src="/images/logo.png" alt="Logo">
+                <h1 class="mb-0">Yogui-ri</h1>
             </div>
-        </nav>
+
+            <!-- Menú colapsable en dispositivos pequeños -->
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <RouterLink class="nav-link" to="/">Home</RouterLink>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Quiénes somos</a>
+                        </li>
+                    </ul>
+
+                    <!-- Menú de usuario -->
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="/images/perfil.png" alt="Perfil">
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li v-if="userAuth && rol === 'admin'">
+                                <RouterLink class="dropdown-item" to="/admin">Administrar</RouterLink>
+                            </li>
+                            <li v-else-if="userAuth && rol === 'guia'">
+                                <RouterLink class="dropdown-item" to="/guia">Mi guía</RouterLink>
+                            </li>
+                            <li v-else-if="userAuth && rol === 'cliente'">
+                                <RouterLink class="dropdown-item" to="/cliente">Mi usuario</RouterLink>
+                            </li>
+                            <li v-else>
+                                <RouterLink class="dropdown-item" to="/login">Iniciar Sesión</RouterLink>
+                            </li>
+                            <li v-if="userAuth">
+                                <a class="dropdown-item text-danger" @click="logOut">Cerrar Sesión</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
     </header>
 </template>
 

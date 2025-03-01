@@ -78,6 +78,7 @@ async function logIn() { // Funcion que comprueba si los datos introducidos corr
             emit("sessionStarted",
                 {id: userFound.id,
                 nombre: userFound.nombre,
+                email: userFound.email,
                 rol: userFound.rol})
             error.value = '';
 
