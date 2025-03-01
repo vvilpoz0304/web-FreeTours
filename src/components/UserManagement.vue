@@ -203,17 +203,4 @@ function previousPage() {
 .table-hover tbody tr:hover {
     border: 1px solid black;
 }
-
-.page-link {
-    background-color: #e8ffe9;
-    color: black;
-}
-
-.page-link:focus {
-    background-color: #7ac58a;
-}
-
-.page-item.active .page-link {
-    border: none;
-    background-color: rgb(95, 132, 95);
-}</style>
+</style>

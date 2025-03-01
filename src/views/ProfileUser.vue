@@ -12,6 +12,19 @@ if (!props.userAuth) {
 }
 
 let rol = ref(JSON.parse(localStorage.getItem("session")).rol);
+
+let email = props.userAuth.email;
+
+function getBooking(clientEmail) {
+    fetch(`http://localhost/api.php/reservas?email=${clientEmail}`, {
+        method: 'GET',
+    })
+        .then(response => response.json())
+        .then(data => console.log('Reservas del usuario:', data))
+        .catch(error => console.error('Error:', error));
+
+}
+
 </script>
 
 <template>
@@ -33,9 +46,7 @@ let rol = ref(JSON.parse(localStorage.getItem("session")).rol);
             <!--Contenido de la ventana de Gestion de Usuarios-->
             <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
                 tabindex="0">
-                <ul>
-                    <li>Rutas reservadas</li>
-                </ul>
+
             </div>
             <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
                 Rutas Realizadas

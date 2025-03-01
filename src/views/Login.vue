@@ -186,7 +186,7 @@ async function signIn() {
         </div>
         <div class="formSignUp" v-else>
             <h1>¡Registrate ahora!</h1>
-            <img className="logo" alt="logo" src="../assets/images/osoGinUp.png"/>
+            <img className="logo" alt="logo" src="/images/osoGinUp.png"/>
             <label for="Name">*Name:</label>
             <input v-model="formSign.nombre" type="text" name="name" placeholder="Name">
             <p v-if="errName" class="text-danger mt-2">¡El nombre de usuario no puede estar vacio!</p>

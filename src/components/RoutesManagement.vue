@@ -229,11 +229,34 @@ function createGuideAssignation() {
         .catch(error => console.error("Error:", error));
 }
 
+////////////////////////////////
+// Paginacion de los usuarios //
+////////////////////////////////
+let currentPage = ref(1);
+let routesPerPage = 5;
+let totalPages = computed(() => Math.ceil(routes.value.length / routesPerPage)); // Calculamos el numero de paginas totales, lo hacemos computed para que se actulice automaticamente cuando el numero de usuarios cambie
+
+let paginatedRoutes = computed(() => {
+    const start = (currentPage.value - 1) * routesPerPage; // Calculamos el inicio de los registros de la pagina
+    const end = start + routesPerPage; // Al numero inicial le sumamos los 10 registros que queremos mostrar
+    return routes.value.slice(start, end); // Devolvemos los registros que queremos mostrar
+})
+
+function nextPage() {
+    if (currentPage.value < Math.ceil(routes.value.length / routesPerPage)) { // Comprobamos que no estemos en la utlima pagina
+        currentPage.value++;
+    }
+}
+function previousPage() {
+    if (currentPage.value > 1) { // Comprobamos que no estamos en la primera pagina;
+        currentPage.value--;
+    }
+}
 
 </script>
 <template>
     <main class="container rounded shadow p-3">
-        <div class="card mb-5 routeCard" v-for="route in routes" :key="route.id">
+        <div class="card mb-5 routeCard" v-for="route in paginatedRoutes" :key="route.id">
             <div class="row g-2">
                 <div class="col-md-3 image">
                     <img :src="route.foto" class="img-fluid rounded-start imagenRuta" :alt="route.titulo">
@@ -264,7 +287,21 @@ function createGuideAssignation() {
                 </div>
             </div>
         </div>
+        <nav aria-label="Paginacion de usuarios">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                    <a class="page-link" href="#" @click.prevent="previousPage">Previous</a>
+                </li>
+                <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: currentPage === page }">
+                    <a class="page-link" href="#" @click.prevent="currentPage = page">{{ page }}</a>
+                </li>
+                <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                    <a class="page-link" href="#" @click.prevent="nextPage">Next</a>
+                </li>
+            </ul>
+        </nav>
     </main>
+    
     <!-- Modal de duplicacion de rutas -->
     <div class="modal fade" id="modalduplicate" tabindex="-1" aria-labelledby="duplicateModal" aria-hidden="true">
         <div class="modal-dialog">
