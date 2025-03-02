@@ -6,6 +6,8 @@
 import { ref, watch } from "vue";
 import { images, bearPasswordImage } from "./images.js";
 import router from "@/router";
+import Swal from 'sweetalert2'; // Importamos SweetAlert2 para mostrar mensajes de confirmacion https://sweetalert2.github.io/;
+
 
 // Declaramos las varaibles de la imagen y el input del email
 const emailLog = ref("");
@@ -44,15 +46,15 @@ watch(emailLog, handleEmail);
 
 
 // Conseguimos los datos del LogIn
-    // emailLog lo hemos conseguido anteriormente
-let formLogin = ref({email: emailLog, password: ''});
+// emailLog lo hemos conseguido anteriormente
+let formLogin = ref({ email: emailLog, password: '' });
 
 // Controlamos si ya tiene una cuenta existente o no para mostrar un formulario u otro;
 let showLogin = ref(true);
 
-    function alternateLogin(){
-        showLogin.value = !showLogin.value
-    }
+function alternateLogin() {
+    showLogin.value = !showLogin.value
+}
 
 
 // Creamos la funcion de inicio de Sesion;
@@ -64,25 +66,40 @@ async function logIn() { // Funcion que comprueba si los datos introducidos corr
     try {
         const response = await fetch(API + "/usuarios");
         const users = await response.json();
-        
+
         console.log(users)
         const userFound = users.find(
             (e) => e.email === formLogin.value.email && e.contraseña === formLogin.value.password
         );
-//        const usuario = users.map( e => ({email: e.email, pass: e.contraseña}))
-        //userFound = {nombre: userFound.nombre, email: userFound.email, rol: userFound.rol}
-        
+
         if (userFound) {
             localStorage.setItem("session", JSON.stringify(userFound));
 
             emit("sessionStarted",
-                {id: userFound.id,
-                nombre: userFound.nombre,
-                email: userFound.email,
-                rol: userFound.rol})
+                {
+                    id: userFound.id,
+                    nombre: userFound.nombre,
+                    email: userFound.email,
+                    rol: userFound.rol
+                })
             error.value = '';
 
             router.push("/") // Redirige a la vista "home"
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+            Toast.fire({
+                icon: "success",
+                title: `Inicio de sesión correcto, Bienvendio ${userFound.nombre}`
+            });
         } else {
             error.value = 'Usuario o contraseña incorrectos';
         }
@@ -150,22 +167,22 @@ async function comprobarEmail(email) {
 */
 async function signIn() {
     const newUser = {
-    nombre: formSign.value.nombre,
-    email: formSign.value.email,
-    contraseña: formSign.value.contraseña 
-}
+        nombre: formSign.value.nombre,
+        email: formSign.value.email,
+        contraseña: formSign.value.contraseña
+    }
     const response = await fetch(API + "/usuarios", {
-        method: 'POST', 
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(newUser)
     })
-    .then(response => response.json())
-    .then(data => console.log("Respuesta " + data))
-    .catch(error => console.error("Error " + error));
+        .then(response => response.json())
+        .then(data => console.log("Respuesta " + data))
+        .catch(error => console.error("Error " + error));
 
-    
+
 }
 
 </script>
@@ -174,20 +191,20 @@ async function signIn() {
     <div id="containerForms">
         <div class="formLogin" v-if="showLogin">
             <h1>¡Bienvenido!</h1>
-            <img className="logo" alt="logo" :src="image"/>
+            <img className="logo" alt="logo" :src="image" />
             <p v-if="error" class="text-danger mt-2">{{ error }}</p>
             <label for="emailLog">Email: </label>
             <input name="emailLog" type="text" placeholder="E-mail" v-model="emailLog" />
             <label for="password">Password</label>
-            <input v-model="formLogin.password" name="password" type="password" placeholder="At least 8 characters" @focus="handlePasswordFocus"
-                @blur="handlePasswordBlur" />
+            <input v-model="formLogin.password" name="password" type="password" placeholder="At least 8 characters"
+                @focus="handlePasswordFocus" @blur="handlePasswordBlur" />
             <button @click="logIn"> Log In</button>
             <p>Don't have an account yet? <a href="" @click.prevent="alternateLogin()"> Sign in</a></p>
-            
+
         </div>
         <div class="formSignUp" v-else>
             <h1>¡Registrate ahora!</h1>
-            <img className="logo" alt="logo" src="/images/osoGinUp.png"/>
+            <img className="logo" alt="logo" src="/images/osoGinUp.png" />
             <label for="Name">*Name:</label>
             <input v-model="formSign.nombre" type="text" name="name" placeholder="Name">
             <p v-if="errName" class="text-danger mt-2">¡El nombre de usuario no puede estar vacio!</p>
@@ -196,9 +213,9 @@ async function signIn() {
             <p v-if="errEmailNotValid" class="text-danger mt-2">Email no válido</p>
             <p v-if="errEmailRep" class="text-danger mt-2">Este email ya está registrado.</p>
             <label for="password">*Password:</label>
-            <input v-model="formSign.contraseña" name="password" type="password" placeholder="At least 8 characters"/>
+            <input v-model="formSign.contraseña" name="password" type="password" placeholder="At least 8 characters" />
             <p v-if="errPass" class="text-danger mt-2">La contraseña debe contener al menos 8 caracteres.</p>
-            <input v-model="confirmPass" name="password" type="password" placeholder="Repeat your password"/>
+            <input v-model="confirmPass" name="password" type="password" placeholder="Repeat your password" />
             <p v-if="errConfPass" class="text-danger mt-2">La contraseña no coincide</p>
             <button @click="signIn">Sign Up</button>
             <p>Have an account? <a href="" @click.prevent="alternateLogin()"> Log in</a></p>
@@ -207,12 +224,14 @@ async function signIn() {
 </template>
 
 <style scoped>
-#containerForms{
+#containerForms {
     display: flex;
     align-items: center;
     justify-content: space-around;
 }
-.formLogin, .formSignUp{
+
+.formLogin,
+.formSignUp {
     font-family: sans-serif;
     text-align: center;
     display: flex;
@@ -223,23 +242,26 @@ async function signIn() {
     border: 1px solid black;
     padding: 2em;
 
-  }
-  .logo {
+}
+
+.logo {
     max-width: 9em;
     display: block;
     margin: 0 auto 30px;
-  }
-  label{
+}
+
+label {
     text-align: left;
-  }
-  input {
+}
+
+input {
     height: 1.5em;
     margin-bottom: 1em;
     font-size: .9em;
-  }
-  button{
+}
+
+button {
     border: 0px;
     margin-bottom: 1em;
-  }
- 
+}
 </style>

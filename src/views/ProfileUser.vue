@@ -1,7 +1,8 @@
 <script setup>
 import { ref, defineProps } from 'vue';
 import router from '@/router';
-import RutasReservadas from '@/components/RutasReservadas.vue';
+import RutasReservadas from '@/components/BookedRoutes.vue';
+import PastRoutes from '@/components/PastRoutes.vue';
 // En caso de acceder sin estar logueado te redirige a Login;
 const props = defineProps({
     userAuth: Object
@@ -34,17 +35,15 @@ let email = props.userAuth.email;
     <div v-if="userAuth && rol == 'cliente'" class="container">
         <div class="tab-content" id="myTabContent">
             <!--Contenido de la ventana de Gestion de Usuarios-->
-            <div class="tab-pane fade show active w-100 d-flex flex-column align-items-center" id="home-tab-pane"
+            <div class="tab-pane fade show active w-75" id="home-tab-pane"
                 role="tabpanel" aria-labelledby="home-tab" tabindex="0">
                 <RutasReservadas :userAuth="userAuth"></RutasReservadas>
             </div>
-            <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
-                Rutas Realizadas
+            <div class="tab-pane fade w-75" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+                <PastRoutes :userAuth="userAuth"></PastRoutes>
             </div>
         </div>
     </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
