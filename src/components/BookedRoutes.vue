@@ -140,7 +140,7 @@ function getRating() {
                             <strong>Fecha:</strong> {{ booking.ruta_fecha }}. | <strong>Hora:</strong> {{
                                 booking.ruta_hora }} <br>
                             <img src="/images/pin.png">{{ booking.ruta_localidad }}<br>
-                            <strong>Descripcion:</strong> {{ booking.ruta_descripcion }}.
+                            <strong>Descripcion:</strong> {{ (booking.ruta_descripcion).slice(0,100) }}...
                         </p>
                     </div>
                     <p class="card-text">

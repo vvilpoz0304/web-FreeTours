@@ -63,7 +63,7 @@ getBooking(email); // Cargamos las reservas del cliente;
                         <strong>Hora:</strong> {{ booking.ruta_hora }}
                     </p>
                     <p class="card-text">
-                        <strong>Descripción:</strong> {{ booking.ruta_descripcion }}.
+                        <strong>Descripción:</strong> {{(booking.ruta_descripcion).slice(0,100) }}...
                     </p>
                 </div>
             </div>
