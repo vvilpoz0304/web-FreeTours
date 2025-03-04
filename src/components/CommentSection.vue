@@ -13,24 +13,23 @@ const props = defineProps({
 const userID = props.userAuth.id || null;  // Obtenemos el id en caso de estar logueado
 
 const valorations = ref([])
-const newValoration = {
-    user_id: '', // ID del usuario que realiza la valoración
-    ruta_id: '', // ID de la ruta valorada
-    estrellas: '', // Puntuación de 1 a 5
-    comentario: '' //Este campo es opcional
-};
-
+const newValoration = ref({
+    user_id: '',
+    ruta_id: '',
+    estrellas: '',
+    comentario: ''
+});
 function addValoration() {
-    newValoration.user_id = userID;
-    newValoration.ruta_id = props.thisRouteID;
-    newValoration.estrellas = rating.value;
+    newValoration.value.user_id = userID;
+    newValoration.value.ruta_id = props.thisRouteID;
+    newValoration.value.estrellas = rating.value;
 
     fetch('http://localhost/freetours/api.php/valoraciones', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(newValoration)
+        body: JSON.stringify(newValoration.value)
     })
         .then(response => {
             if (!response.ok) {
@@ -38,26 +37,58 @@ function addValoration() {
             }
             return response.json();
         })
-        .then(
+        .then(() => {
             Swal.fire({
-                title: "Valoracion registrada.",
-                text: "¡Gracias por su valoracion!",
+                title: "Valoración registrada.",
+                text: "¡Gracias por su valoración!",
                 icon: "success"
-            })
-        )
+            });
+            alreadyRated.value = true;
+            newValoration.value.comentario = ''; // Limpiar comentario después de enviar
+            valorationsThisRoute(); // Cargar valoraciones después de enviar
+        })
         .catch(error => {
             console.error('Error al crear la valoración:', error);
         });
 }
 
+// Conseguimos las valoraciones de esa ruta para obtener los comentarios posteriormente
+function valorationsThisRoute() {
+    const rutaId = props.thisRouteID
+    fetch(`http://localhost/freetours/api.php/valoraciones?ruta_id=${rutaId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la solicitud: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            valorations.value = data;
+            alreadyRated.value = valorations.value.some(val => val.cliente_id == userID);
+
+            if (alreadyRated.value) {
+                const userRating = valorations.value.find(val => val.cliente_id == userID);
+                rating.value = userRating.puntuacion;
+            } else {
+                rating.value = null; // Se asigna correctamente sin crear un nuevo ref()
+            }
+        })
+        .catch(error => {
+            console.error(`Error al obtener las valoraciones para la ruta ${rutaId}:`, error);
+        });
+}
+valorationsThisRoute();
+
 ///////////////////////////
 /// Rating de estrellas ///
 ///////////////////////////
+
+const alreadyRated = ref(false);
 const rating = ref(null);
 const mouseHoverRating = ref(null);
 const totalStars = 5;
 
-const currentRatingText = computed(() =>
+const currentRatingText = computed(() => // Mediante la propiedad computed miramos cada vez que se haga click en una estrella cambie el texto
     rating.value ? `¡Has seleccionado ${rating.value} estrellas!` : "No has seleccionado ninguna valoración."
 
 );
@@ -67,7 +98,9 @@ const mouseHoverRatingText = computed(() =>
 );
 
 const setRating = (newRating) => {
-    rating.value = newRating;
+    if (!alreadyRated.value) { // Controlamos que si ya se ha valorado anteriormente no pueda cambiar el valor;
+        rating.value = newRating;
+    }
 };
 
 </script>
@@ -76,27 +109,41 @@ const setRating = (newRating) => {
         <div class="comment-section">
             <h3>Comentarios</h3>
             <!-- Formulario para agregar comentarios -->
-            <div class="d-flex flex-column align-items-center">
-                <div class="star-rating">
-                    <!-- Escribimos mediante un v-for las 5 estrellas y dependiendo de su estado las cambiamos de una manera u otra-->
-                    <span v-for="star in totalStars" :key="star" class="star"
-                        :class="{ filled: star <= (mouseHoverRating || rating) }" @click="setRating(star)">
-                        ★
-                    </span>
+            <div class="comment-form d-flex flex-column align-items-center" v-if="didClientThisRoute">
+            </div>
+            <div v-if="!alreadyRated">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="star-rating">
+                        <!-- Escribimos mediante un v-for las 5 estrellas y dependiendo de su estado las cambiamos de una manera u otra-->
+                        <span v-for="star in totalStars" :key="star" class="star"
+                            :class="{ filled: star <= (mouseHoverRating || rating) }" @click="setRating(star)">
+                            ★
+                        </span>
+                    </div>
+                    <div class="rating-text">{{ currentRatingText }}</div>
+                    <!-- Escribimos el texto mediante la interpolacion -->
+                    <div>
+                        <textarea v-model="newValoration.comentario" @keyup.enter="addValoration"
+                            placeholder="Escribe un comentario..." class="comment-input" />
+                        <button @click="addValoration" class="comment-btn">Añadir </button>
+                    </div>
                 </div>
-                <div class="rating-text">{{ currentRatingText }}</div>
             </div>
-            <div class="comment-form" v-if="!didClientThisRoute">
-                <textarea v-model="newValoration.comentario" @keyup.enter="addValoration"
-                    placeholder="Escribe un comentario..." class="comment-input" />
-                <button @click="addValoration" class="comment-btn">Añadir </button>
+            <div v-else>
+                <p class="text-center">¡Ya has valorado esta ruta! :D</p>
             </div>
-
             <!-- Lista de comentarios -->
             <ul class="comment-list">
-                <li v-for="comment in comments" :key="comment.id" class="comment-item">
-                    <p>{{ comment.text }}</p>
-                    <button @click="deleteComment(comment.id)" class="delete-btn">❌</button>
+                <li v-for="comment in valorations" :key="comment.valoracion_id" class="comment-item">
+                    <div class="container shadow comment rounded">
+                        <p v-if="comment.cliente_id == userID" class="small">{{ comment.cliente_nombre }} (Tu
+                            comentario)<span class="badge text-bg-secondary ms-3 small">{{ comment.puntuacion }}
+                                ⭐</span></p>
+                        <p v-else class="small">{{ comment.cliente_nombre }}<span
+                                class="badge text-bg-secondary ms-3 small">{{ comment.puntuacion }} ⭐</span></p>
+                        <p class="fs-5">{{ comment.comentario }}</p>
+                        <p class="small">{{ }}</p>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -104,7 +151,6 @@ const setRating = (newRating) => {
 </template>
 <style scoped>
 .comment-section {
-    max-width: 500px;
     margin: 20px auto;
     padding: 15px;
     border-radius: 10px;
@@ -153,9 +199,12 @@ h3 {
     justify-content: space-between;
     align-items: center;
     padding: 8px;
-    border-bottom: 1px solid #eee;
 }
-
+.comment{
+    background-color: rgb(240, 240, 240);
+    border: 1px solid gray;
+    padding: 1em;
+}
 .delete-btn {
     background: transparent;
     border: none;

@@ -146,7 +146,7 @@ onMounted(() => {
         </div>
 
         <!-- Barra lateral (aside) -->
-        <aside v-if="infoRoute" class="sidebar p-3 shadow rounded w-40">
+        <aside v-if="infoRoute" class="sidebar p-3 shadow rounded w-40 h-auto d-flex flex-column">
             <h2>Detalles de la ruta:</h2>
             <ul>
                 <li class="mb-4 mt-4"><strong>Duracion aproximada de la ruta:</strong> {{ duration }} </li>

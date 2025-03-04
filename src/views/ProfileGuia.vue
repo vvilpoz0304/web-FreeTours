@@ -35,7 +35,6 @@ function getAssignations(idLogged) {
     })
     .catch(error => console.error("Error:", error));
 }
-console.log(" Rutas proximas " + nextRoutesAssigned.value);
 onMounted(() => {
     getAssignations(idLogged);
 });
