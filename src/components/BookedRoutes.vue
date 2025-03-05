@@ -25,7 +25,6 @@ function getBooking(clientEmail) {
                 return bookingDate >= today; // Filtrar solo reservas futuras
             });
             console.log(clientBooking.value);
-
         })
         .catch(error => console.error('Error:', error));
 }
@@ -114,9 +113,6 @@ async function modifyNumAssist(num, reservaID, emailCliente, rutaID) {
     }
 }
 
-function getRating() {
-
-}
 </script>
 <template>
     <div class="card mb-3 w-75 h-auto pe-5 d-flex justify-content-center w-100" style="max-width: 75em"

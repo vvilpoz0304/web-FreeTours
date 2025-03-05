@@ -27,8 +27,6 @@ let duration = (Math.floor(Math.random() * 3) + 1) + " horas y " + (Math.floor(M
 const didClientThisRoute = ref(false) // Variable para comprobar si el usuario ya ha hecho esta fecha
 const alreadyBooked = ref(false)  // Variable para saber si el usuario ya ha reservado esta ruta o no
 
-console.log(thisRouteID, userID)
-
 // Conseguimos todas las reservas del usuario logueado y las filtramos por las anteriores al dia de hoy para saber las rutas que ha realizado
 function getBooking(clientEmail) {
     if (!clientEmail) return; // Si no hay email, no hacer la petición
@@ -51,6 +49,8 @@ function getBooking(clientEmail) {
             didClientThisRoute.value = clientBooking.value.some(booking =>
                 booking.ruta_id == thisRouteID && booking.cliente_id == userID
             );
+            console.log(didClientThisRoute.value)
+
 
             // Permitir reservar solo si no tiene una reserva futura
             alreadyBooked.value = data.some(booking =>
@@ -97,8 +97,8 @@ function getRating(rutaId) {
 }
 
 const newBooking = ref({
-    email: '',
-    ruta_id: '',
+    email: email,
+    ruta_id: thisRouteID,
     num_personas: ''
 });
 
@@ -110,11 +110,27 @@ onMounted(() => {
     modalNewBooking = new Modal(document.getElementById("newBookingModal"));
 });
 
-function openModal(email, rutaID) {
-    newBooking.value.email = email;
-    newBooking.value.ruta_id = rutaID;
-    console.log(newBooking.value.email, newBooking.value.ruta_id)
+function openModal() {
     modalNewBooking.show(); // Mostramos el modal
+}
+
+function addBooking() {
+    fetch('http://localhost/freetours/api.php/reservas', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newBooking.value)
+    })
+        .then(response => response.json())
+        .then(Swal.fire({
+            title: "¡Reserva registrada!",
+            text: "Recuerda que puedes cancelarla o modificarla en cualquier momento.",
+            imageUrl: "/images/reservaNueva.png",
+            imageWidth: 150,
+            imageHeight: 150,
+        }))
+        .catch(error => console.error('Error:', error));
 }
 
 onMounted(() => {
@@ -154,11 +170,15 @@ onMounted(() => {
                 <li class="mb-4 mt-4"><strong>Número de asistentes: </strong>{{ infoRoute?.asistentes }}</li>
                 <li class="mb-4 mt-4"><strong>¿Necesita más informacion?</strong> ¡Contáctenos!</li>
             </ul>
-            <button v-if="userAuth && !alreadyBooked" @click="openModal(email, infoRoute.id)">¡Reserva ya!</button>
+            <div v-if="didClientThisRoute">
+                <p>¡Esta ruta ya ha expirado!</p>
+            </div>
+            <button v-else-if="userAuth && !alreadyBooked" @click="openModal()">¡Reserva ya!</button>
             <div v-else-if="alreadyBooked">
                 <p class="mb-4 mt-4">¡Ya tienes una reserva hecha!</p>
                 <RouterLink to="/cliente">Ver mis reservas.</RouterLink>
             </div>
+
             <div v-else>
                 <p>Inicie sesión o registrese ahora para reservar ahora!</p>
                 <RouterLink to="/login" class="btn" role="button">Iniciar Sesion</RouterLink>
@@ -170,7 +190,8 @@ onMounted(() => {
             <p class="text-muted">Cargando información de la ruta...</p>
         </div>
     </main>
-        <CommentSection :userAuth="userAuth" :didClientThisRoute="didClientThisRoute" :thisRouteID="thisRouteID"></CommentSection>
+    <CommentSection :userAuth="userAuth" :didClientThisRoute="didClientThisRoute" :thisRouteID="thisRouteID">
+    </CommentSection>
 
 
     <!-- Modal para realizar la reserva; -->
@@ -190,7 +211,8 @@ onMounted(() => {
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary"
-                        :disabled="newBooking.num_personas == '' || newBooking.num_personas <= 0 || newBooking.num_personas > 8">Reservar</button>
+                        :disabled="newBooking.num_personas == '' || newBooking.num_personas <= 0 || newBooking.num_personas > 8"
+                        @click="addBooking()">Reservar</button>
                 </div>
             </div>
         </div>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps } from 'vue';
+import { ref } from 'vue';
 import router from '@/router';
 import RutasReservadas from '@/components/BookedRoutes.vue';
 import PastRoutes from '@/components/PastRoutes.vue';

@@ -122,10 +122,10 @@ const setRating = (newRating) => {
                     </div>
                     <div class="rating-text">{{ currentRatingText }}</div>
                     <!-- Escribimos el texto mediante la interpolacion -->
-                    <div>
+                    <div class="d-flex flex-column align-items-center">
                         <textarea v-model="newValoration.comentario" @keyup.enter="addValoration"
                             placeholder="Escribe un comentario..." class="comment-input" />
-                        <button @click="addValoration" class="comment-btn">Añadir </button>
+                        <button @click="addValoration" class="comment-btn w-50 mt-2">Añadir </button>
                     </div>
                 </div>
             </div>

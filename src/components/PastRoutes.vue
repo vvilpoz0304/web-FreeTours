@@ -70,7 +70,7 @@ getBooking(email); // Cargamos las reservas del cliente;
 
             <!-- Número de asistentes -->
             <div class="col-md-3 text-center">
-                <button>Valorar Ruta</button>
+                <RouterLink :to="{ name: 'InformacionRuta', params: { ruta_id: booking.ruta_id } }">Valorar Ruta</RouterLink>
             </div>
         </div>
     </div>
