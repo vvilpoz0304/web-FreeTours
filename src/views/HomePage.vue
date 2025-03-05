@@ -2,11 +2,12 @@
 
 </script>
 <template>
-  <div class="fondo-buscador">
+  <section class="fondo-buscador d-flex flex-column justify-content-center align-items-center">
     <div id="formBusqueda">
-      <input type="text">
+      <label for="buscador">Busca la ruta deseada:</label>
+      <input type="text" name="buscador">
     </div>
-  </div>
+  </section>
   <div class="listaRutas">
     
   </div>
@@ -19,6 +20,6 @@
   height: 40vh;
 }
 #formBusqueda{
-  background-color: white;
+  flex: 1;
 }
 </style>

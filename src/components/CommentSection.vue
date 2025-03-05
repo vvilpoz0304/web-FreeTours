@@ -105,7 +105,7 @@ const setRating = (newRating) => {
 
 </script>
 <template>
-    <div class="container mt-2 shadow rounded">
+    <section class="container mt-2 shadow rounded">
         <div class="comment-section">
             <h3>Comentarios</h3>
             <!-- Formulario para agregar comentarios -->
@@ -147,7 +147,7 @@ const setRating = (newRating) => {
                 </li>
             </ul>
         </div>
-    </div>
+    </section>
 </template>
 <style scoped>
 .comment-section {
