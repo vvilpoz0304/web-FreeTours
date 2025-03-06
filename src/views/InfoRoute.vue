@@ -4,6 +4,8 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { Modal } from "bootstrap";
 import CommentSection from '@/components/CommentSection.vue';
+import Swal from 'sweetalert2';
+
 
 const route = useRoute() // Obtenemos el id de la ruta actual;
 //console.log(route.params.ruta_id);
@@ -71,7 +73,6 @@ function getInfoRoute(rutaId) {
         .then(response => response.json())
         .then(data => {
             infoRoute.value = data
-            console.log(infoRoute.value)
         })
         .catch(error => console.error('Error:', error));
 }
@@ -131,6 +132,9 @@ function addBooking() {
             imageHeight: 150,
         }))
         .catch(error => console.error('Error:', error));
+
+        alreadyBooked.value = true;
+        modalNewBooking.hide();
 }
 
 onMounted(() => {
@@ -141,47 +145,54 @@ onMounted(() => {
 </script>
 
 <template>
-    <main class="container d-flex justify-content-between mt-4 shadow rounded">
+    <main class="container d-flex flex-column flex-md-row justify-content-between mt-4 shadow-lg p-4 rounded">
         <!-- Sección principal -->
-        <div v-if="infoRoute" class="content w-75">
+        <div v-if="infoRoute" class="content w-100 w-md-75">
             <!-- Imagen de fondo con título -->
-            <div class="h-auto d-flex flex-column align-items-center justify-content-center text-white rounded" :style="{
-                backgroundImage: `url(${infoRoute.foto})`,  // Establecemos la imagen de la ruta de fondo;
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                minHeight: '20em'
-            }">
-                <h1 class="fw-bold text-shadow">{{ infoRoute.titulo }}</h1>
+            <div class="h-auto d-flex flex-column align-items-center justify-content-center text-white rounded"
+                :style="{
+                    backgroundImage: `url(${infoRoute.foto})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    minHeight: '20em'
+                }">
+                <h1 class="fw-bold text-shadow text-center">{{ infoRoute.titulo }}</h1>
             </div>
 
             <!-- Descripción -->
-            <p class="mt-4 fs-5"><strong class="fs-4">Fecha:</strong> {{ infoRoute?.fecha }} | <strong
-                    class="fs-3">Hora:</strong> {{ infoRoute?.hora }}</p>
-            <p class="mt-2 fs-5"><strong class="fs-4">Descripcion:</strong> {{ infoRoute?.descripcion }}</p>
+            <p class="mt-4 fs-5">
+                <strong class="fs-4">Fecha:</strong> {{ infoRoute?.fecha }} | 
+                <strong class="fs-4">Hora:</strong> {{ infoRoute?.hora }}
+            </p>
+            <p class="mt-2 fs-5">
+                <strong class="fs-4">Descripción:</strong> {{ infoRoute?.descripcion }}
+            </p>
         </div>
 
         <!-- Barra lateral (aside) -->
-        <aside v-if="infoRoute" class="sidebar p-3 shadow rounded w-40 h-auto d-flex flex-column">
-            <h2>Detalles de la ruta:</h2>
-            <ul>
-                <li class="mb-4 mt-4"><strong>Duracion aproximada de la ruta:</strong> {{ duration }} </li>
-                <li class="mb-4 mt-4"><strong>Precio:</strong> {{ price }}€</li>
-                <li class="mb-4 mt-4"><strong>Número de asistentes: </strong>{{ infoRoute?.asistentes }}</li>
-                <li class="mb-4 mt-4"><strong>¿Necesita más informacion?</strong> ¡Contáctenos!</li>
+        <aside v-if="infoRoute" class="sidebar p-3 shadow rounded w-45 w-md-35 h-auto d-flex flex-column mt-4 mt-md-0">
+            <h2 class="fw-bold">Detalles de la ruta:</h2>
+            <ul class="list-unstyled">
+                <li class="mb-3"><strong>Duración:</strong> {{ duration }}</li>
+                <li class="mb-3"><strong>Precio:</strong> {{ price }}€</li>
+                <li class="mb-3"><strong>Asistentes:</strong> {{ infoRoute?.asistentes }}</li>
+                <li class="mb-3"><strong>¿Más información?</strong> ¡Contáctenos!</li>
             </ul>
-            <div v-if="didClientThisRoute">
-                <p>¡Esta ruta ya ha expirado!</p>
-            </div>
-            <button v-else-if="userAuth && !alreadyBooked" @click="openModal()">¡Reserva ya!</button>
-            <div v-else-if="alreadyBooked">
-                <p class="mb-4 mt-4">¡Ya tienes una reserva hecha!</p>
-                <RouterLink to="/cliente">Ver mis reservas.</RouterLink>
-            </div>
 
+            <div v-if="didClientThisRoute">
+                <p class="text-danger">¡Esta ruta ya ha expirado!</p>
+            </div>
+            <button v-else-if="userAuth && !alreadyBooked" @click="openModal()" class="btn btn-success">
+                ¡Reserva ya!
+            </button>
+            <div v-else-if="alreadyBooked">
+                <p class="text-primary">¡Ya tienes una reserva hecha!</p>
+                <RouterLink to="/cliente" class="btn btn-outline-primary">Ver mis reservas</RouterLink>
+            </div>
             <div v-else>
-                <p>Inicie sesión o registrese ahora para reservar ahora!</p>
-                <RouterLink to="/login" class="btn" role="button">Iniciar Sesion</RouterLink>
+                <p>Inicie sesión o regístrese para reservar</p>
+                <RouterLink to="/login" class="btn btn-outline-secondary">Iniciar Sesión</RouterLink>
             </div>
         </aside>
 
@@ -190,13 +201,11 @@ onMounted(() => {
             <p class="text-muted">Cargando información de la ruta...</p>
         </div>
     </main>
-    <CommentSection :userAuth="userAuth" :didClientThisRoute="didClientThisRoute" :thisRouteID="thisRouteID">
-    </CommentSection>
 
+    <CommentSection :userAuth="userAuth" :didClientThisRoute="didClientThisRoute" :thisRouteID="thisRouteID" />
 
-    <!-- Modal para realizar la reserva; -->
-    <div class="modal fade" id="newBookingModal" tabindex="-1" aria-labelledby="newBookingModalLabel"
-        aria-hidden="true">
+    <!-- Modal para realizar la reserva -->
+    <div class="modal fade" id="newBookingModal" tabindex="-1" aria-labelledby="newBookingModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -204,7 +213,7 @@ onMounted(() => {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Elija el número de asistentes por favor: (Max. de 8 personas por reserva)</p>
+                    <p>Seleccione el número de asistentes (máx. 8 personas):</p>
                     <input v-model="newBooking.num_personas" type="number" class="form-control"
                         placeholder="Número de personas" min="1" max="8">
                 </div>
@@ -218,6 +227,7 @@ onMounted(() => {
         </div>
     </div>
 </template>
+
 
 <style scoped>
 /* Sombra en el texto para mejor legibilidad */

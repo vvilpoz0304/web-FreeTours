@@ -1,70 +1,181 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
+import Swal from 'sweetalert2'; // Importamos SweetAlert2 para mostrar mensajes de confirmacion https://sweetalert2.github.io/;
 
 let routes = ref([]);
+let routesToFilter = ref([]);
 
+// Al principio coinseguimos todas las rutass disponibles;
 function getRoutesAvailable() {
   fetch('http://localhost/freetours/api.php/rutas', {
     method: 'GET',
   })
     .then(response => response.json())
-    .then(data => routes.value = data)
+    .then(data => {
+      routes.value = data
+      let today = new Date();
+
+      routes.value = routes.value.filter(route => {
+        let routeDate = new Date(route.fecha);
+        return routeDate >= today;
+      })
+    })
     .catch(error => console.error('Error:', error));
+}
+
+let dateFiltered = ref(''); // Variable para guardar la fecha indicada;
+
+// Utilizamos la libreria SweetAlert2 para ahorrarnos hacer el modal y conseguir la fecha deseada;
+async function openFilter() {
+  const { value: selectedDate } = await Swal.fire({
+    title: "Seleccione la fecha deseada",
+    input: "date",
+    didOpen: () => {
+      const today = (new Date()).toISOString();
+      Swal.getInput().min = today.split("T")[0];
+    }
+  });
+  if (selectedDate) {
+    dateFiltered.value = selectedDate; // Guardamos la fecha
+    getRoutesByDate(dateFiltered.value); // Llamamos a la funcion para filtrar las rutas;
+  }
+}
+// Funcion para filtrar las rutas por la fecha indicada
+function getRoutesByDate(date) {
+  fetch('http://localhost/freetours/api.php/rutas', {
+    method: 'GET',
+  })
+    .then(response => response.json())
+    .then(data => {
+      routes.value = data;
+
+      routes.value = routes.value.filter(route => {
+        return route.fecha == dateFiltered.value;
+      })
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+const routeName = ref('');
+
+// Tambien hacemos una funcion para filtrar las rutas por nombre
+function getRoutesByName() {
+  let nameLength = routeName.value.length;
+
+  routes.value = routes.value.find(route =>
+    route.titulo.substr(0, nameLength) == routeName.value
+  )
+
+
 }
 
 onMounted(() => {
   getRoutesAvailable();
+});
+
+////////////////////////////////
+///  Paginacion de las rutas ///
+////////////////////////////////
+let currentPage = ref(1);
+let routesperpage = 4;
+let totalPages = computed(() => Math.ceil(routes.value.length / routesperpage)); // Calculamos el numero de paginas totales, lo hacemos computed para que se actulice automaticamente cuando el numero de usuarios cambie
+
+let paginatedRoutes = computed(() => {
+  const start = (currentPage.value - 1) * routesperpage; // Calculamos el inicio de los registros de la pagina
+  const end = start + routesperpage; // Al numero inicial le sumamos los 10 registros que queremos mostrar
+  return routes.value.slice(start, end); // Devolvemos los registros que queremos mostrar
 })
+
+function nextPage() {
+  if (currentPage.value < Math.ceil(routes.value.length / routesperpage)) { // Comprobamos que no estemos en la utlima pagina
+    currentPage.value++;
+  }
+}
+function previousPage() {
+  if (currentPage.value > 1) { // Comprobamos que no estamos en la primera pagina;
+    currentPage.value--;
+  }
+}
 </script>
+
 <template>
-  <section class="fondo-buscador d-flex flex-column justify-content-center align-items-center">
-    <div id="formBusqueda">
-      <label for="buscador">Busca la ruta deseada:</label>
-      <input type="text" name="buscador" placeholder="Ejemplo: Ruta Historica...">
-    </div>
-  </section>
-  <div class="d-flex flex-column align-items-center">
-    <h1>Explora cualquier rincon del mundo con Yogui-ri</h1>
-    <div class="card mb-3 w-100 h-auto d-flex justify-content-center" style="max-width: 75em" v-for="route in routes"
-      :key="route.id">
-
-      <div class="row g-0 align-items-center">
-        <!-- Imagen de la ruta -->
-        <div class="col-md-2 d-flex justify-content-center">
-          <img :src="route.foto" alt="Imagen de la ruta" class="img-fluid rounded" style="object-fit: cover;" />
-        </div>
-
-        <!-- Detalles de la ruta -->
-        <div class="col-md-7">
-          <div class="card-body">
-            <h2 class="card-title fw-bolder d-flex align-items-center">
-              <RouterLink :userAuth="userAuth" :to="{ name: 'InformacionRuta', params: { ruta_id: route.id } }">
-                {{ route.titulo }}
-              </RouterLink>
-              <span class="badge text-bg-secondary ms-3 fs-6 bg-success">
-                {{ route.valoracion }} ⭐
-              </span>
-            </h2>
-
-            <p class="card-text mb-3">
-              <strong>Fecha:</strong> {{ route.fecha }} |
-              <strong>Hora:</strong> {{ route.hora }}
-            </p>
-            <p class="card-text">
-              <strong>Descripción:</strong> {{ (route.descripcion).slice(0, 100) }}...
-            </p>
+  <!-- Buscador -->
+  <section class="fondo-buscador d-flex flex-column justify-content-center align-items-center py-4">
+    <div class="container formBuscador">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="input-group shadow">
+            <input type="text" class="form-control" v-model="routeName" @change="getRoutesByName"
+              placeholder="Ejemplo: Ruta Histórica..." />
+            <button type="button" class="btn" @click="openFilter()"><img src="/images/filtro.png"></button>
           </div>
-        </div>
-
-        <!-- Número de asistentes -->
-        <div class="col-md-3 text-center">
-          <RouterLink :to="{ name: 'InformacionRuta', params: { ruta_id: route.id } }">Reservar</RouterLink>
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- Título -->
+  <div class="container text-center my-5">
+    <h1 class="fw-bold">Explora cualquier rincón del mundo con Yogui-ri</h1>
+  </div>
+
+  <!-- Lista de rutas -->
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10" v-for="route in paginatedRoutes" :key="route.id">
+        <div class="card mb-4 shadow-lg">
+          <div class="row g-0">
+            <!-- Imagen -->
+            <div class="col-md-3 d-flex align-items-center">
+              <img :src="route.foto" class="img-fluid rounded-start" alt="Imagen de la ruta" />
+            </div>
+
+            <!-- Detalles -->
+            <div class="col-md-6">
+              <div class="card-body">
+                <h2 class="card-title d-flex align-items-center">
+                  <RouterLink :userAuth="userAuth" :to="{ name: 'InformacionRuta', params: { ruta_id: route.id } }"
+                    class="text-decoration-none">
+                    {{ route.titulo }}
+                  </RouterLink>
+                </h2>
+
+                <p class="card-text mb-2">
+                  <strong>Fecha:</strong> {{ route.fecha }} |
+                  <strong>Hora:</strong> {{ route.hora }}
+                </p>
+                <p class="card-text text-muted">
+                  {{ (route.descripcion).slice(0, 100) }}...
+                </p>
+              </div>
+            </div>
+
+            <!-- Botón Reservar -->
+            <div class="col-md-3 d-flex align-items-center justify-content-center">
+              <RouterLink class="btn btn-success btn-lg px-4"
+                :to="{ name: 'InformacionRuta', params: { ruta_id: route.id } }">
+                Reservar
+              </RouterLink>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav aria-label="Paginacion de rutas">
+      <ul class="pagination justify-content-center">
+        <li class="page-item" :class="{ disabled: currentPage === 1 }">
+          <a class="page-link" href="#" @click.prevent="previousPage">Previous</a>
+        </li>
+        <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: currentPage === page }">
+          <a class="page-link" href="#" @click.prevent="currentPage = page">{{ page }}</a>
+        </li>
+        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+          <a class="page-link" href="#" @click.prevent="nextPage">Next</a>
+        </li>
+      </ul>
+    </nav>
   </div>
 </template>
-
 <style scoped>
 .fondo-buscador {
   background-image: url("/images/fondoBuscador.avif");
@@ -72,7 +183,13 @@ onMounted(() => {
   height: 40vh;
 }
 
-#formBusqueda {
-  /*flex: 1; */
+.formBuscador {
+  background-color: rgba(181, 251, 153, 0.7);
 }
+
+/*
+#formBusqueda {
+  /*flex: 1; 
+}
+*/
 </style>

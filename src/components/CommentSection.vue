@@ -110,27 +110,27 @@ const setRating = (newRating) => {
             <h3>Comentarios</h3>
             <!-- Formulario para agregar comentarios -->
             <div class="comment-form d-flex flex-column align-items-center" v-if="didClientThisRoute">
-            </div>
-            <div v-if="!alreadyRated">
-                <div class="d-flex flex-column align-items-center">
-                    <div class="star-rating">
-                        <!-- Escribimos mediante un v-for las 5 estrellas y dependiendo de su estado las cambiamos de una manera u otra-->
-                        <span v-for="star in totalStars" :key="star" class="star"
-                            :class="{ filled: star <= (mouseHoverRating || rating) }" @click="setRating(star)">
-                            ★
-                        </span>
-                    </div>
-                    <div class="rating-text">{{ currentRatingText }}</div>
-                    <!-- Escribimos el texto mediante la interpolacion -->
+                <div v-if="!alreadyRated">
                     <div class="d-flex flex-column align-items-center">
-                        <textarea v-model="newValoration.comentario" @keyup.enter="addValoration"
-                            placeholder="Escribe un comentario..." class="comment-input" />
-                        <button @click="addValoration" class="comment-btn w-50 mt-2">Añadir </button>
+                        <div class="star-rating">
+                            <!-- Escribimos mediante un v-for las 5 estrellas y dependiendo de su estado las cambiamos de una manera u otra-->
+                            <span v-for="star in totalStars" :key="star" class="star"
+                                :class="{ filled: star <= (mouseHoverRating || rating) }" @click="setRating(star)">
+                                ★
+                            </span>
+                        </div>
+                        <div class="rating-text">{{ currentRatingText }}</div>
+                        <!-- Escribimos el texto mediante la interpolacion -->
+                        <div class="d-flex flex-column align-items-center">
+                            <textarea v-model="newValoration.comentario" @keyup.enter="addValoration"
+                                placeholder="Escribe un comentario..." class="comment-input" />
+                            <button @click="addValoration" class="comment-btn w-50 mt-2">Añadir </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div v-else>
-                <p class="text-center">¡Ya has valorado esta ruta! :D</p>
+                <div v-else>
+                    <p class="text-center">¡Ya has valorado esta ruta! :D</p>
+                </div>
             </div>
             <!-- Lista de comentarios -->
             <ul class="comment-list">
@@ -200,11 +200,13 @@ h3 {
     align-items: center;
     padding: 8px;
 }
-.comment{
+
+.comment {
     background-color: rgb(240, 240, 240);
     border: 1px solid gray;
     padding: 1em;
 }
+
 .delete-btn {
     background: transparent;
     border: none;

@@ -56,6 +56,7 @@ function deleteBooking(reservaId) {
                 text: "La reserva ha sido eliminada.",
                 icon: "success"
             });
+            getBooking(email);
         }
     });
 }
