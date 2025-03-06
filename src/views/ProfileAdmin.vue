@@ -1,7 +1,7 @@
 <script setup>
 // Importamos todo lo necesario;
 import router from '@/router';
-import { ref  } from 'vue';
+import { ref } from 'vue';
 import UserManagement from '@/components/UserManagement.vue';
 import RouteCreator from '@/components/RouteCreator.vue';
 import RoutesManagement from '@/components/RoutesManagement.vue';
@@ -16,9 +16,13 @@ if (!props.userAuth) {
 }
 
 //Comprobamos el rol del usuario logueado;
-let rol = ref(JSON.parse(localStorage.getItem("session")).rol)
+let rol = props.userAuth?.rol || null
 
-rol.value != 'admin' ? router.push(`/${rol.value}`) : null;
+if (rol == null) {
+    router.push('/login');
+} else if (rol != 'admin') {
+    router.push(`/${rol}`);
+}
 
 </script>
 <template>
@@ -53,13 +57,12 @@ rol.value != 'admin' ? router.push(`/${rol.value}`) : null;
                 <RouteCreator :userAuth="session"></RouteCreator>
             </div>
             <!--Contenido de la ventana de la cancelacion de rutas-->
-            <div class="tab-pane fade routesList show w-75" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab"
-                tabindex="0">
+            <div class="tab-pane fade routesList show w-75" id="contact-tab-pane" role="tabpanel"
+                aria-labelledby="contact-tab" tabindex="0">
                 <RoutesManagement :userAuth="session"></RoutesManagement>
             </div>
         </div>
     </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

@@ -8,12 +8,14 @@ const props = defineProps({
     userAuth: Object
 });
 
-if (!props.userAuth) {
-    router.push("/login");
+//Comprobamos el rol del usuario logueado;
+let rol = props.userAuth?.rol || null
+
+if (rol == null) {
+    router.push('/login');
 }
 
-let rol = ref(JSON.parse(localStorage.getItem("session")).rol);
-let email = props.userAuth.email;
+let email = props.userAuth?.email || null;
 
 
 </script>
@@ -32,7 +34,7 @@ let email = props.userAuth.email;
                 Realizadas</button>
         </li>
     </ul>
-    <div v-if="userAuth && rol == 'cliente'" class="container">
+    <div v-if="userAuth" class="container">
         <div class="tab-content" id="myTabContent">
             <!--Contenido de la ventana de Gestion de Usuarios-->
             <div class="tab-pane fade show active w-75" id="home-tab-pane"

@@ -2,8 +2,13 @@
 import { onMounted, ref, computed } from 'vue';
 import Swal from 'sweetalert2'; // Importamos SweetAlert2 para mostrar mensajes de confirmacion https://sweetalert2.github.io/;
 
-let routes = ref([]);
-let routesToFilter = ref([]);
+const props = defineProps({
+    userAuth: Object
+});
+
+
+let routes = ref([]); // Las rutas que se van a mostrar
+let allRoutes = ref([]);  // Para almacenar todas las rutas
 
 // Al principio coinseguimos todas las rutass disponibles;
 function getRoutesAvailable() {
@@ -12,10 +17,10 @@ function getRoutesAvailable() {
   })
     .then(response => response.json())
     .then(data => {
-      routes.value = data
+      allRoutes.value = data
       let today = new Date();
 
-      routes.value = routes.value.filter(route => {
+      routes.value = allRoutes.value.filter(route => {
         let routeDate = new Date(route.fecha);
         return routeDate >= today;
       })
@@ -30,6 +35,7 @@ async function openFilter() {
   const { value: selectedDate } = await Swal.fire({
     title: "Seleccione la fecha deseada",
     input: "date",
+    inputPlaceholder: dateFiltered.value ? dateFiltered.value : '',
     didOpen: () => {
       const today = (new Date()).toISOString();
       Swal.getInput().min = today.split("T")[0];
@@ -49,7 +55,7 @@ function getRoutesByDate(date) {
     .then(data => {
       routes.value = data;
 
-      routes.value = routes.value.filter(route => {
+      routes.value = allRoutes.value.filter(route => {
         return route.fecha == dateFiltered.value;
       })
     })
@@ -60,11 +66,14 @@ const routeName = ref('');
 
 // Tambien hacemos una funcion para filtrar las rutas por nombre
 function getRoutesByName() {
-  let nameLength = routeName.value.length;
+  if(routeName.value.length > 0){
+  routes.value = allRoutes.value.filter(route =>
+    route.titulo.toLowerCase().includes(routeName.value.toLowerCase())
+  );
+  } else{
+    getRoutesAvailable();
+  }
 
-  routes.value = routes.value.find(route =>
-    route.titulo.substr(0, nameLength) == routeName.value
-  )
 
 
 }
@@ -105,7 +114,7 @@ function previousPage() {
       <div class="row justify-content-center">
         <div class="col-md-6">
           <div class="input-group shadow">
-            <input type="text" class="form-control" v-model="routeName" @change="getRoutesByName"
+            <input type="text" class="form-control" v-model="routeName" @input="getRoutesByName"
               placeholder="Ejemplo: Ruta Histórica..." />
             <button type="button" class="btn" @click="openFilter()"><img src="/images/filtro.png"></button>
           </div>
@@ -122,13 +131,17 @@ function previousPage() {
   <!-- Lista de rutas -->
   <div class="container">
     <div class="row justify-content-center">
+      <section v-if="paginatedRoutes.length > 0">
       <div class="col-lg-10" v-for="route in paginatedRoutes" :key="route.id">
         <div class="card mb-4 shadow-lg">
           <div class="row g-0">
             <!-- Imagen -->
             <div class="col-md-3 d-flex align-items-center">
-              <img :src="route.foto" class="img-fluid rounded-start" alt="Imagen de la ruta" />
+              <div class="image-container">
+                <img :src="route.foto" class="img-fluid rounded-start object-fit-cover imgRoute" alt="Imagen de la ruta" />
+              </div>
             </div>
+
 
             <!-- Detalles -->
             <div class="col-md-6">
@@ -142,7 +155,8 @@ function previousPage() {
 
                 <p class="card-text mb-2">
                   <strong>Fecha:</strong> {{ route.fecha }} |
-                  <strong>Hora:</strong> {{ route.hora }}
+                  <strong>Hora:</strong> {{ route.hora }} <br>
+                  <img src="/images/pin.png" class="w-10"> {{ route.localidad }}
                 </p>
                 <p class="card-text text-muted">
                   {{ (route.descripcion).slice(0, 100) }}...
@@ -160,8 +174,7 @@ function previousPage() {
           </div>
         </div>
       </div>
-    </div>
-    <nav aria-label="Paginacion de rutas">
+      <nav aria-label="Paginacion de rutas">
       <ul class="pagination justify-content-center">
         <li class="page-item" :class="{ disabled: currentPage === 1 }">
           <a class="page-link" href="#" @click.prevent="previousPage">Previous</a>
@@ -174,6 +187,12 @@ function previousPage() {
         </li>
       </ul>
     </nav>
+      </section>
+      <section v-else class="d-flex flex-column align-items-center">
+        <img src="/images/noData.png" width="250px">
+      <p style="color: red;">No se ha encontrado ninguna ruta con estos datos :(</p>
+      </section>
+    </div>
   </div>
 </template>
 <style scoped>
@@ -187,6 +206,18 @@ function previousPage() {
   background-color: rgba(181, 251, 153, 0.7);
 }
 
+.image-container {
+  width: 100%;
+  height: 200px;
+  /* Ajusta el tamaño fijo que deseas para la imagen */
+  overflow: hidden;
+}
+
+.imgRoute {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 /*
 #formBusqueda {
   /*flex: 1; 

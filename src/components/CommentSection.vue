@@ -10,7 +10,7 @@ const props = defineProps({
 })
 
 
-const userID = props.userAuth.id || null;  // Obtenemos el id en caso de estar logueado
+const userID =  props.userAuth ? props.userAuth.id : null;  // Obtenemos el id en caso de estar logueado
 
 const valorations = ref([])
 const newValoration = ref({

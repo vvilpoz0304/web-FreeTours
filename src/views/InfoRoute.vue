@@ -8,8 +8,6 @@ import Swal from 'sweetalert2';
 
 
 const route = useRoute() // Obtenemos el id de la ruta actual;
-//console.log(route.params.ruta_id);
-
 // Averiguamos si el cliente está logueado o no;
 const props = defineProps({
     userAuth: Object
@@ -51,8 +49,6 @@ function getBooking(clientEmail) {
             didClientThisRoute.value = clientBooking.value.some(booking =>
                 booking.ruta_id == thisRouteID && booking.cliente_id == userID
             );
-            console.log(didClientThisRoute.value)
-
 
             // Permitir reservar solo si no tiene una reserva futura
             alreadyBooked.value = data.some(booking =>
@@ -133,9 +129,30 @@ function addBooking() {
         }))
         .catch(error => console.error('Error:', error));
 
-        alreadyBooked.value = true;
-        modalNewBooking.hide();
+    alreadyBooked.value = true;
+    modalNewBooking.hide();
 }
+
+// Debemos comprobar que en caso de que la reserva la realice un guia, no sea el mismo el asignado a hacer esa ruta por lo que hacemos un fetch a la ruta de asignaciones;
+let isGuideAssignated  = ref(false);
+let guideAssignations = ref([]);
+
+function getAssignations() {
+    fetch(`http://localhost/freetours/api.php/asignaciones`, {
+        method: 'GET',
+    })
+        .then(response => response.json())
+        .then(data => {
+            guideAssignations.value = data
+            isGuideAssignated.value = guideAssignations.value.some(assign => assign.ruta_id == thisRouteID && assign.guia_id == userID)
+            console.log("El guia esta asignado: " + isGuideAssignated.value);
+        })
+        .catch(error => console.error('Error:', error));
+}
+if (props.userAuth.rol == 'guia') {
+    getAssignations();
+}
+
 
 onMounted(() => {
     getBooking(email)
@@ -149,20 +166,19 @@ onMounted(() => {
         <!-- Sección principal -->
         <div v-if="infoRoute" class="content w-100 w-md-75">
             <!-- Imagen de fondo con título -->
-            <div class="h-auto d-flex flex-column align-items-center justify-content-center text-white rounded"
-                :style="{
-                    backgroundImage: `url(${infoRoute.foto})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    minHeight: '20em'
-                }">
+            <div class="h-auto d-flex flex-column align-items-center justify-content-center text-white rounded" :style="{
+                backgroundImage: `url(${infoRoute.foto})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                minHeight: '20em'
+            }">
                 <h1 class="fw-bold text-shadow text-center">{{ infoRoute.titulo }}</h1>
             </div>
 
             <!-- Descripción -->
             <p class="mt-4 fs-5">
-                <strong class="fs-4">Fecha:</strong> {{ infoRoute?.fecha }} | 
+                <strong class="fs-4">Fecha:</strong> {{ infoRoute?.fecha }} |
                 <strong class="fs-4">Hora:</strong> {{ infoRoute?.hora }}
             </p>
             <p class="mt-2 fs-5">
@@ -183,6 +199,9 @@ onMounted(() => {
             <div v-if="didClientThisRoute">
                 <p class="text-danger">¡Esta ruta ya ha expirado!</p>
             </div>
+            <button v-else-if="userAuth && isGuideAssignated" class="btn btn-warning">
+                No puedes reservar está ruta debido a que usted está asignado a realizada
+            </button>
             <button v-else-if="userAuth && !alreadyBooked" @click="openModal()" class="btn btn-success">
                 ¡Reserva ya!
             </button>
@@ -205,7 +224,8 @@ onMounted(() => {
     <CommentSection :userAuth="userAuth" :didClientThisRoute="didClientThisRoute" :thisRouteID="thisRouteID" />
 
     <!-- Modal para realizar la reserva -->
-    <div class="modal fade" id="newBookingModal" tabindex="-1" aria-labelledby="newBookingModalLabel" aria-hidden="true">
+    <div class="modal fade" id="newBookingModal" tabindex="-1" aria-labelledby="newBookingModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">

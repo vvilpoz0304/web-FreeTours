@@ -1,6 +1,8 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onBeforeMount, onMounted, ref } from "vue";
 import { Modal } from "bootstrap";
+import router from '@/router';
+
 
 //En caso de acceder sin estar logueado te redirige a Login;
 const props = defineProps({
@@ -11,8 +13,17 @@ if (!props.userAuth) {
     router.push("/login");
 }
 
-let rol = ref(JSON.parse(localStorage.getItem("session")).rol)
-let idLogged = props.userAuth.id;
+// Comprobamos el rol del usuario logueado;
+let rol = props.userAuth?.rol || null;
+
+if (!rol) {
+    router.push('/login');
+} else if (rol !== 'guia') {
+    router.push(`/${rol}`);
+}
+
+
+let idLogged = props.userAuth?.id || null;
 
 const nextRoutesAssigned = ref([]);
 
@@ -20,24 +31,22 @@ function getAssignations(idLogged) {
     fetch(`http://localhost/freetours/api.php/asignaciones?guia_id=${idLogged}`, {
         method: "GET",
     })
-    .then(response => response.json())
-    .then(data => {
-        nextRoutesAssigned.value = data.filter(route => {
-            const routeDate = new Date(route.ruta_fecha);
-            const currentDate = new Date();
+        .then(response => response.json())
+        .then(data => {
+            nextRoutesAssigned.value = data.filter(route => {
+                const routeDate = new Date(route.ruta_fecha);
+                const currentDate = new Date();
 
-            // Elimina horas, minutos y segundos para comparar solo la fecha
-            currentDate.setHours(0, 0, 0, 0);
-            routeDate.setHours(0, 0, 0, 0);
+                // Elimina horas, minutos y segundos para comparar solo la fecha
+                currentDate.setHours(0, 0, 0, 0);
+                routeDate.setHours(0, 0, 0, 0);
 
-            return routeDate >= currentDate;
-        });
-    })
-    .catch(error => console.error("Error:", error));
+                return routeDate >= currentDate;
+            });
+        })
+        .catch(error => console.error("Error:", error));
 }
-onMounted(() => {
-    getAssignations(idLogged);
-});
+getAssignations(idLogged);
 
 const clientsList = ref([]);
 let modalInstanceList = null;  // Declaramos una variable para instanciar el modal
