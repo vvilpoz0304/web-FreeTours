@@ -3,7 +3,7 @@ import { onMounted, ref, computed } from 'vue';
 import Swal from 'sweetalert2'; // Importamos SweetAlert2 para mostrar mensajes de confirmacion https://sweetalert2.github.io/;
 
 const props = defineProps({
-    userAuth: Object
+  userAuth: Object
 });
 
 
@@ -66,11 +66,11 @@ const routeName = ref('');
 
 // Tambien hacemos una funcion para filtrar las rutas por nombre
 function getRoutesByName() {
-  if(routeName.value.length > 0){
-  routes.value = allRoutes.value.filter(route =>
-    route.titulo.toLowerCase().includes(routeName.value.toLowerCase())
-  );
-  } else{
+  if (routeName.value.length > 0) {
+    routes.value = allRoutes.value.filter(route =>
+      route.titulo.toLowerCase().includes(routeName.value.toLowerCase())
+    );
+  } else {
     getRoutesAvailable();
   }
 
@@ -131,69 +131,76 @@ function previousPage() {
   <!-- Lista de rutas -->
   <div class="container">
     <div class="row justify-content-center">
-      <section v-if="paginatedRoutes.length > 0">
-      <div class="col-lg-10" v-for="route in paginatedRoutes" :key="route.id">
-        <div class="card mb-4 shadow-lg">
-          <div class="row g-0">
-            <!-- Imagen -->
-            <div class="col-md-3 d-flex align-items-center">
-              <div class="image-container">
-                <img :src="route.foto" class="img-fluid rounded-start object-fit-cover imgRoute" alt="Imagen de la ruta" />
-              </div>
-            </div>
+      <div class="col-lg-10"> <!-- Contenedor para centrar la lista -->
+        <section v-if="paginatedRoutes.length > 0">
+          <div v-for="route in paginatedRoutes" :key="route.id">
+            <div class="card mb-4 shadow-lg">
+              <div class="row g-0">
+                <!-- Imagen -->
+                <div class="col-md-3 d-flex align-items-center">
+                  <div class="image-container">
+                    <img :src="route.foto" class="img-fluid rounded-start object-fit-cover imgRoute"
+                      alt="Imagen de la ruta" />
+                  </div>
+                </div>
 
+                <!-- Detalles -->
+                <div class="col-md-6">
+                  <div class="card-body">
+                    <h2 class="card-title d-flex align-items-center">
+                      <RouterLink :userAuth="userAuth" :to="{ name: 'InformacionRuta', params: { ruta_id: route.id } }"
+                        class="text-decoration-none">
+                        {{ route.titulo }}
+                      </RouterLink>
+                    </h2>
 
-            <!-- Detalles -->
-            <div class="col-md-6">
-              <div class="card-body">
-                <h2 class="card-title d-flex align-items-center">
-                  <RouterLink :userAuth="userAuth" :to="{ name: 'InformacionRuta', params: { ruta_id: route.id } }"
-                    class="text-decoration-none">
-                    {{ route.titulo }}
+                    <p class="card-text mb-2">
+                      <strong>Fecha:</strong> {{ route.fecha }} |
+                      <strong>Hora:</strong> {{ route.hora }} <br>
+                      <img src="/images/pin.png" class="w-10"> {{ route.localidad }}
+                    </p>
+                    <p class="card-text text-muted">
+                      {{ (route.descripcion).slice(0, 100) }}...
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Botón Reservar -->
+                <div class="col-md-3 d-flex align-items-center justify-content-center">
+                  <RouterLink class="btn btn-success btn-lg px-4"
+                    :to="{ name: 'InformacionRuta', params: { ruta_id: route.id } }">
+                    Reservar
                   </RouterLink>
-                </h2>
-
-                <p class="card-text mb-2">
-                  <strong>Fecha:</strong> {{ route.fecha }} |
-                  <strong>Hora:</strong> {{ route.hora }} <br>
-                  <img src="/images/pin.png" class="w-10"> {{ route.localidad }}
-                </p>
-                <p class="card-text text-muted">
-                  {{ (route.descripcion).slice(0, 100) }}...
-                </p>
+                </div>
               </div>
-            </div>
-
-            <!-- Botón Reservar -->
-            <div class="col-md-3 d-flex align-items-center justify-content-center">
-              <RouterLink class="btn btn-success btn-lg px-4"
-                :to="{ name: 'InformacionRuta', params: { ruta_id: route.id } }">
-                Reservar
-              </RouterLink>
             </div>
           </div>
-        </div>
+
+          <!-- Paginación -->
+          <nav aria-label="Paginacion de rutas">
+            <ul class="pagination justify-content-center">
+              <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                <a class="page-link" href="#" @click.prevent="previousPage">Previous</a>
+              </li>
+              <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: currentPage === page }">
+                <a class="page-link" href="#" @click.prevent="currentPage = page">{{ page }}</a>
+              </li>
+              <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                <a class="page-link" href="#" @click.prevent="nextPage">Next</a>
+              </li>
+            </ul>
+          </nav>
+        </section>
+
+        <!-- Mensaje si no hay rutas -->
+        <section v-else class="d-flex flex-column align-items-center">
+          <img src="/images/noData.png" width="250px">
+          <p style="color: red;">No se ha encontrado ninguna ruta con estos datos :(</p>
+        </section>
       </div>
-      <nav aria-label="Paginacion de rutas">
-      <ul class="pagination justify-content-center">
-        <li class="page-item" :class="{ disabled: currentPage === 1 }">
-          <a class="page-link" href="#" @click.prevent="previousPage">Previous</a>
-        </li>
-        <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: currentPage === page }">
-          <a class="page-link" href="#" @click.prevent="currentPage = page">{{ page }}</a>
-        </li>
-        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-          <a class="page-link" href="#" @click.prevent="nextPage">Next</a>
-        </li>
-      </ul>
-    </nav>
-      </section>
-      <section v-else class="d-flex flex-column align-items-center">
-        <img src="/images/noData.png" width="250px">
-      <p style="color: red;">No se ha encontrado ninguna ruta con estos datos :(</p>
-      </section>
     </div>
   </div>
+
 </template>
 <style scoped>
 .fondo-buscador {
@@ -218,6 +225,7 @@ function previousPage() {
   height: 100%;
   object-fit: cover;
 }
+
 /*
 #formBusqueda {
   /*flex: 1; 

@@ -34,15 +34,21 @@ function updateDataSesion(user) {
 </template>
 
 <style scoped>
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Oculta cualquier desbordamiento lateral */
+  height: 100%; /* Asegura que el body tenga altura completa */
+}
+.content {
+  flex: 1;
+  overflow: hidden; /* Evita que Vue cree un scroll dentro del div */
+}
 .layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh; /* El contenedor ocupa toda la altura de la pantalla */
-}
-
-.content {
-  flex: 1; /* Ocupa el espacio disponible y empuja el footer */
-  overflow-y: auto; /* Permite desplazamiento si el contenido es grande */
 }
 
 footer {

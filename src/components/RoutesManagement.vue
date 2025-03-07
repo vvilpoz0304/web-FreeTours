@@ -269,7 +269,7 @@ function previousPage() {
                                 {{ route.fecha }}</h6>
                             <h6 class="card-title">Guia: {{ route.guia_nombre }}</h6>
                             <p class="card-text">
-                                {{ route.descripcion }}
+                                {{ (route.descripcion).slice(0, 75) }}...
                             </p>
                         </div>
                         <div class="btn-group mt-3">

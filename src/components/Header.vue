@@ -39,7 +39,7 @@ function logOut() {
                             <RouterLink :userAuth="userAuth" class="nav-link" to="/">Home</RouterLink>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Quiénes somos</a>
+                            <RouterLink class="nav-link" to="/sobreNosotros">Quienes Somos</RouterLink>
                         </li>
                     </ul>
 

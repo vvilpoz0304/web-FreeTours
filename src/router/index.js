@@ -5,6 +5,7 @@ import ProfileAdmin from '@/views/ProfileAdmin.vue'
 import ProfileGuia from '@/views/ProfileGuia.vue'
 import ProfileUser from '@/views/ProfileUser.vue'
 import InfoRoute from '@/views/InfoRoute.vue'
+import About from '@/views/About.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,6 +42,11 @@ const router = createRouter({
       path: '/informacion-ruta/:ruta_id',
       name: 'InformacionRuta',
       component: InfoRoute,
+    },
+    {
+      path: '/sobreNosotros',
+      name: 'aboutUs',
+      component: About,
     }
   ],
 })
