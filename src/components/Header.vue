@@ -56,8 +56,8 @@ function logOut() {
                             <li v-else-if="userAuth && rol === 'guia'">
                                 <RouterLink class="dropdown-item" to="/guia">Mi guía</RouterLink>
                             </li>
-                            <li v-else-if="userAuth && rol === 'cliente'">
-                                <RouterLink class="dropdown-item" to="/cliente">Mi usuario</RouterLink>
+                            <li v-if="userAuth">
+                                <RouterLink class="dropdown-item" to="/cliente">Mi Rutas</RouterLink>
                             </li>
                             <li v-else>
                                 <RouterLink class="dropdown-item" to="/login">Iniciar Sesión</RouterLink>

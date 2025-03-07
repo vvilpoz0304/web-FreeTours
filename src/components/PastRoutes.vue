@@ -53,7 +53,7 @@ getBooking(email); // Cargamos las reservas del cliente;
                         <RouterLink :userAuth="userAuth" :to="{ name: 'InformacionRuta', params: { ruta_id: booking.ruta_id } }">
                             {{ booking.ruta_titulo }}
                         </RouterLink>
-                        <span class="badge text-bg-secondary ms-3 fs-6 bg-success">
+                        <span class="badge text-bg-secondary ms-3 fs-6 bg-success" v-if="booking.valoracion != null">
                             {{ booking.valoracion }} ⭐
                         </span>
                     </h2>

@@ -53,7 +53,7 @@ if (rol == null) {
                 <UserManagement :userAuth="session"></UserManagement>
             </div>
             <!--Contenido de la ventana de la Creacion de Rutas-->
-            <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+            <div class="tab-pane fade w-100" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
                 <RouteCreator :userAuth="session"></RouteCreator>
             </div>
             <!--Contenido de la ventana de la cancelacion de rutas-->

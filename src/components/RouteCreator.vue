@@ -189,7 +189,7 @@ function getGuidesAvailable(fecha) {
                 <label for="direccion" class="form-label" aria-label="Direccion">Buscar dirección:</label>
                 <input name="direccion" @change="searchLocation($event.target.value)" placeholder="Buscar dirección"
                     class="form-control" />
-                <div id="map" style="height: 25em;" class="mt-2 border rounded"></div>
+                <div id="map" style="height: 35em;" class="mt-2 border rounded"></div>
             </div>
 
             <div class="row mb-3 g-3">
