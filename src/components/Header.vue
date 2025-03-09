@@ -9,7 +9,7 @@ const props = defineProps({
 });
 
 // Computed para el rol del usuario
-const rol = computed(() => props.userAuth ? props.userAuth.rol : null);
+const rol = computed(() => (props.userAuth ? props.userAuth.rol : null));
 
 // Función para cerrar sesión
 function logOut() {
@@ -22,47 +22,49 @@ function logOut() {
     <header class="text-white p-3">
         <div class="container d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
-                <img src="/images/logo.png" alt="Logo">
-                <h1 class="mb-0">Yogui-ri</h1>
+                <!-- Logo -->
+                <img src="/images/logo.png" alt="Logo" class="img-fluid" style="max-width: 60px;">
+                <h1 class="mb-0 ms-3">Yogui-ri</h1>
             </div>
 
-            <!-- Menú colapsable en dispositivos pequeños -->
-            <nav class="navbar navbar-expand-lg navbar-light">
+            <!-- Menú de Navegación -->
+            <nav class="navbar navbar-expand-md navbar-light">
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
+                <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                    <ul class="navbar-nav ms-auto text-center">
                         <li class="nav-item">
-                            <RouterLink :userAuth="userAuth" class="nav-link" to="/">Home</RouterLink>
+                            <RouterLink class="nav-link" to="/">Home</RouterLink>
                         </li>
                         <li class="nav-item">
                             <RouterLink class="nav-link" to="/sobreNosotros">Quienes Somos</RouterLink>
                         </li>
+                        <li class="nav-item">
+                            <RouterLink class="nav-link" to="/login" v-if="!userAuth">Iniciar Sesión</RouterLink>
+                        </li>
                     </ul>
 
                     <!-- Menú de usuario -->
-                    <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="/images/perfil.png" alt="Perfil">
+                    <div class="dropdown ms-3" v-if="userAuth">
+                        <button class="btn btn-secondary dropdown-toggle d-flex align-items-center" type="button"
+                            id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="/images/perfil.png" alt="Perfil" class="img-fluid me-2" style="max-width: 60px; height: auto;">
+                            <span class="visually-hidden">Abrir menú de usuario</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li v-if="userAuth && rol === 'admin'">
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton1">
+                            <li v-if="rol === 'admin'">
                                 <RouterLink class="dropdown-item" to="/admin">Administrar</RouterLink>
                             </li>
-                            <li v-else-if="userAuth && rol === 'guia'">
+                            <li v-else-if="rol === 'guia'">
                                 <RouterLink class="dropdown-item" to="/guia">Mi guía</RouterLink>
                             </li>
-                            <li v-if="userAuth">
-                                <RouterLink class="dropdown-item" to="/cliente">Mi Rutas</RouterLink>
+                            <li>
+                                <RouterLink class="dropdown-item" to="/cliente">Mis Rutas</RouterLink>
                             </li>
-                            <li v-else>
-                                <RouterLink class="dropdown-item" to="/login">Iniciar Sesión</RouterLink>
-                            </li>
-                            <li v-if="userAuth">
+                            <li>
                                 <a class="dropdown-item text-danger" @click="logOut">Cerrar Sesión</a>
                             </li>
                         </ul>
@@ -73,58 +75,38 @@ function logOut() {
     </header>
 </template>
 
-
 <style scoped>
+/* Estilos generales del header */
 header {
     background-color: #6bc472;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 10px 20px;
+    width: 100%;
 }
 
-header div {
+h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Ajustes para el Navbar */
+.navbar-nav {
     display: flex;
     align-items: center;
+    gap: 15px;
 }
 
-img {
-    width: 4em;
-    height: auto;
-    margin: 0em 3em 0em 2em;
-}
-
-nav {
-    width: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-nav li {
-    margin: 0em 5em 0em 5em;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.navbar-toggler {
     border: none;
 }
 
 .nav-link {
-    color: white;
-    /* Color del texto */
-    text-decoration: none;
-    /* Eliminar subrayado */
-    border-radius: 0.25em;
-    /* Bordes redondeados */
+    padding: 1.5em 3em;
     border: none !important;
-    /* Eliminar borde */
-}
-
-.nav-link:hover {
-    background-color: #5aa65a;
-    /* Color de fondo al pasar el ratón */
-    color: white;
-    /* Color del texto al pasar el ratón */
+    outline: none !important;
 }
 
 #dropdownMenuButton1 {
@@ -133,19 +115,21 @@ nav li {
     height: 4em;
 }
 
+.nav-link:hover {
+    background-color: #54985a;
+}
+
+/* Estilos del menú desplegable */
+.dropdown-menu {
+    font-size: 1.1rem;
+    min-width: 180px;
+}
+
 .dropdown-item {
-    display: flex;
-    justify-content: center;
-    width: 2em;
+    padding: 10px 15px;
 }
-
-.dropdown-menu a {
-    margin: 0%;
-    padding: 0%;
-    width: auto;
-}
-
-.dropdown-menu a:hover {
-    background-color: lightgray !important;
+.dropdown-item:active {
+    background-color: lightgray;
+    color: black;
 }
 </style>

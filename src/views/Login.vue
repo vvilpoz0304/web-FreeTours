@@ -116,55 +116,48 @@ const formSign = ref({
 })
 const confirmPass = ref('');
 
-/*
+
 
 // Declaramos los mensajes de error;
-let errName = false;
-let errEmailNotValid = false;
-let errEmailRep = false;
-let errPass = false;
-let errConfPass = false;
+let errName = ref(false);
+let errEmailNotValid = ref(false);
+let errEmailRep = ref(false);
+let errPass = ref(false);
+let errConfPass = ref(false);
 
-// Funcion para validar los inputs del registro;
+const emailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#?!$%^&*\-+_]).{8,}$/;
 
-function formSignValidation(){
-    let validName = false;
-    let validEmail = false;
-    let validPass = false;
-    let validConfPass = false;
 
-    let regExEmail =  /^\w+([.-_+]?\w+)*@\w+([.-]?\w+)*(\.\w{2,10})+$/ 
+function validateSignIn() {
+    formSign.value.nombre.length > 0 ? errName.value = false : errName.value = true;
+    emailRegEx.test(formSign.value.email) == true ? errEmailNotValid.value = false : errEmailNotValid.value = true;
+    notRepeatEmail();
+    formSign.value.contraseña.length >= 8 && passwordRegex.test(formSign.value.contraseña) ? errPass.value = false : errPass.value = true;
+    confirmPass.value == formSign.value.contraseña ? errConfPass.value = false : errConfPass.value = true;
 
-    formSign.value.nombre.trim.length > 0 ? validName=true : errName = true; // Validamos que el nombre no esté vacio;
-    regExEmail.test(formSign.value.email) && !comprobarEmail(formSign.value.email) ? validEmail=true : errEmailNotValid = true; // Validamos que el email sea válido mediante un regEx y que el email no este ya registrado
-    formSign.value.contraseña.length > 8 && formSign.value.contraseña.match(/[0-9]/) ? validConfPass = true : errPass = true;
-    confirmPass == formSign.value.contraseña ? validConfPass = true : errConfPass = true;
-
-    if(validName &&  validEmail && validPass && validConfPass){
+    if (!errName.value && !errEmailNotValid.value && !errEmailRep.value && !errPass.value && !errEmailNotValid.value && !errConfPass.value) {
         signIn();
-        console.log("esta bien");
-    } else console.log("esta mal");
-}
-//Funcion para recorrer los usuarios registrados y comprobar de que el usuario introducido en el registro no pertenezca ya a ningun cliente
-async function comprobarEmail(email) {
-    try {
-        const response = await fetch(API + "/usuarios");
-        const users = await response.json();
-        
-        const userExistent = users.find(
-            (e) => e.email === email
-        );
-        
-        if (userExistent) {
-            errEmailRep = true; // En caso de que ya exista alguien con ese correo, pondrá a true el mensaje de error de que ya existe alguien con ese correo
-        } else {
-            return false; // En caso de que no, devolverá false para indicar de que no existe nadie con ese usuario
-        }
-    } catch (err) {
-        error.value = 'Error al cargar los datos';
+        formSign.value.nombre = '';
+        formSign.value.email = '';
+        formSign.value.contraseña = '';
+        confirmPass.value = '';
+        alternateLogin();
     }
+
 }
-*/
+
+function notRepeatEmail() {
+    fetch('http://localhost/freetours/api.php/usuarios', {
+        method: 'GET',
+    })
+        .then(response => response.json())
+        .then(data =>
+            errEmailRep.value = data.some(user => user.email == formSign.value.email)
+        )
+        .catch(error => console.error('Error:', error));
+}
+
 async function signIn() {
     const newUser = {
         nombre: formSign.value.nombre,
@@ -179,8 +172,12 @@ async function signIn() {
         body: JSON.stringify(newUser)
     })
         .then(response => response.json())
-        .then(data => console.log("Respuesta " + data))
-        .catch(error => console.error("Error " + error));
+        .then(data => Swal.fire({
+            title: "¡Usuario Registrado!",
+            text: "Registro realizado correctamente, ¡Bienvenido!",
+            icon: "success"
+        }))
+        .catch (error => console.error("Error " + error));
 
 
 }
@@ -188,80 +185,95 @@ async function signIn() {
 </script>
 
 <template>
-    <div id="containerForms">
-        <div class="formLogin" v-if="showLogin">
-            <h1>¡Bienvenido!</h1>
-            <img className="logo" alt="logo" :src="image" />
-            <p v-if="error" class="text-danger mt-2">{{ error }}</p>
-            <label for="emailLog">Email: </label>
-            <input name="emailLog" type="text" placeholder="E-mail" v-model="emailLog" />
-            <label for="password">Password</label>
-            <input v-model="formLogin.password" name="password" type="password" placeholder="At least 8 characters"
-                @focus="handlePasswordFocus" @blur="handlePasswordBlur" />
-            <button @click="logIn"> Log In</button>
-            <p>Don't have an account yet? <a href="" @click.prevent="alternateLogin()"> Sign in</a></p>
-
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+      <div class="row w-100">
+        <!-- Formulario de Iniciar Sesión -->
+        <div v-if="showLogin" class="col-md-6 mx-auto">
+          <div class="card shadow-lg border-0 p-4">
+            <h2 class="text-center fw-bold mb-4">¡Bienvenido!</h2>
+            <img class="logo img-fluid mx-auto d-block mb-3" :src="image" alt="Logo" />
+            <p v-if="error" class="text-danger text-center">{{ error }}</p>
+  
+            <div class="mb-3">
+              <label for="emailLog" class="form-label">Email:</label>
+              <input name="emailLog" type="email" class="form-control" placeholder="Correo electrónico" v-model="emailLog" />
+            </div>
+  
+            <div class="mb-3">
+              <label for="password" class="form-label">Contraseña:</label>
+              <input v-model="formLogin.password" name="password" type="password" class="form-control"
+                placeholder="Al menos 8 caracteres" @focus="handlePasswordFocus" @blur="handlePasswordBlur" />
+            </div>
+  
+            <button @click="logIn" class="btn btn-primary w-100">Iniciar Sesión</button>
+            <p class="text-center mt-3">
+              ¿Aún no tienes una cuenta? 
+              <a href="#" @click.prevent="alternateLogin()" class="text-decoration-none">Registrarse</a>
+            </p>
+          </div>
         </div>
-        <div class="formSignUp" v-else>
-            <h1>¡Registrate ahora!</h1>
-            <img className="logo" alt="logo" src="/images/osoGinUp.png" />
-            <label for="Name">*Name:</label>
-            <input v-model="formSign.nombre" type="text" name="name" placeholder="Name">
-            <p v-if="errName" class="text-danger mt-2">¡El nombre de usuario no puede estar vacio!</p>
-            <label for="email">*Email: </label>
-            <input v-model="formSign.email" name="email" type="email" placeholder="E-mail" />
-            <p v-if="errEmailNotValid" class="text-danger mt-2">Email no válido</p>
-            <p v-if="errEmailRep" class="text-danger mt-2">Este email ya está registrado.</p>
-            <label for="password">*Password:</label>
-            <input v-model="formSign.contraseña" name="password" type="password" placeholder="At least 8 characters" />
-            <p v-if="errPass" class="text-danger mt-2">La contraseña debe contener al menos 8 caracteres.</p>
-            <input v-model="confirmPass" name="password" type="password" placeholder="Repeat your password" />
-            <p v-if="errConfPass" class="text-danger mt-2">La contraseña no coincide</p>
-            <button @click="signIn">Sign Up</button>
-            <p>Have an account? <a href="" @click.prevent="alternateLogin()"> Log in</a></p>
+  
+        <!-- Formulario de Registro -->
+        <div v-else class="col-md-6 mx-auto">
+          <div class="card shadow-lg border-0 p-4">
+            <h2 class="text-center fw-bold mb-4">¡Regístrate ahora!</h2>
+            <img class="logo img-fluid mx-auto d-block mb-3" src="/images/osoGinUp.png" alt="Logo" />
+  
+            <div class="mb-3">
+              <label for="nombre" class="form-label">Nombre:</label>
+              <input v-model="formSign.nombre" type="text" class="form-control" placeholder="Nombre de usuario" />
+              <p v-if="errName" class="text-danger mt-1">¡El nombre no puede estar vacío!</p>
+            </div>
+  
+            <div class="mb-3">
+              <label for="email" class="form-label">Email:</label>
+              <input v-model="formSign.email" type="email" class="form-control" placeholder="Correo electrónico" />
+              <p v-if="errEmailNotValid" class="text-danger mt-1">Email no válido</p>
+              <p v-if="errEmailRep" class="text-danger mt-1">Este email ya está registrado.</p>
+            </div>
+  
+            <div class="mb-3">
+              <label for="password" class="form-label">Contraseña:</label>
+              <input v-model="formSign.contraseña" type="password" class="form-control"
+                placeholder="Debe incluir mayúsculas, minúsculas, números y símbolos" />
+              <p v-if="errPass" class="text-danger mt-1">
+                La contraseña debe tener mínimo 8 caracteres, incluyendo mayúsculas, minúsculas, números y símbolos.
+              </p>
+            </div>
+  
+            <div class="mb-3">
+              <label for="confirmPassword" class="form-label">Confirmar Contraseña:</label>
+              <input v-model="confirmPass" type="password" class="form-control" placeholder="Repite tu contraseña" />
+              <p v-if="errConfPass" class="text-danger mt-1">Las contraseñas no coinciden.</p>
+            </div>
+  
+            <button @click="validateSignIn()" class="btn btn-success w-100">Registrarse</button>
+            <p class="text-center mt-3">
+              ¿Ya tienes una cuenta? 
+              <a href="#" @click.prevent="alternateLogin()" class="text-decoration-none">Iniciar Sesión</a>
+            </p>
+          </div>
         </div>
+      </div>
     </div>
-</template>
-
-<style scoped>
-#containerForms {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-}
-
-.formLogin,
-.formSignUp {
-    font-family: sans-serif;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    width: 20em;
-    margin: 2em 5em;
-    font-size: 1.2em;
-    border: 1px solid black;
-    padding: 2em;
-
-}
-
-.logo {
-    max-width: 9em;
-    display: block;
-    margin: 0 auto 30px;
-}
-
-label {
-    text-align: left;
-}
-
-input {
-    height: 1.5em;
-    margin-bottom: 1em;
-    font-size: .9em;
-}
-
-button {
-    border: 0px;
-    margin-bottom: 1em;
-}
-</style>
+  </template>
+  
+  <style scoped>
+  /* Ajuste del fondo y centrado */
+  .container {
+    background: #f8f9fa;
+  }
+  
+  /* Logo */
+  .logo {
+    max-width: 120px;
+  }
+  
+  /* Tarjeta */
+  .card {
+    max-width: 450px;
+    margin: auto;
+    padding: 20px;
+  }
+  </style>
+  

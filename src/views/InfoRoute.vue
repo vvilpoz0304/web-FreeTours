@@ -149,7 +149,7 @@ function getAssignations() {
         })
         .catch(error => console.error('Error:', error));
 }
-if (props.userAuth.rol == 'guia') {
+if (props.userAuth && props.userAuth.rol == 'guia') {
     getAssignations();
 }
 
