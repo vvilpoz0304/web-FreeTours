@@ -50,13 +50,13 @@ function deleteBooking(reservaId) {
                 method: 'DELETE',
             })
                 .then(response => response.json())
+                .then(getBooking(email))
                 .catch(error => console.error('Error:', error));
             Swal.fire({
                 title: "Reserva eliminada",
                 text: "La reserva ha sido eliminada.",
                 icon: "success"
             });
-            getBooking(email);
         }
     });
 }
@@ -116,56 +116,56 @@ async function modifyNumAssist(num, reservaID, emailCliente, rutaID) {
 
 </script>
 <template>
-    <div class="card mb-3 w-75 h-auto pe-5 d-flex justify-content-center w-100" style="max-width: 75em"
-        v-for="booking in clientBooking" :key="booking.id">
-        <div class="column d-flex align-items-center">
-            <div class="col-md-2">
-                <img :src="booking.ruta_foto" alt="Imagen de la ruta" class="img-fluid rounded"
-                    style="object-fit: cover;" />
+    <div class="container">
+      <div class="card mb-3 p-3 shadow w-100" v-for="booking in clientBooking" :key="booking.id">
+        <div class="row g-3 align-items-center">
+          <!-- Imagen -->
+          <div class="col-4 col-md-2">
+            <img :src="booking.ruta_foto" alt="Imagen de la ruta" 
+              class="img-fluid rounded w-100 img-ruta" />
+          </div>
+  
+          <!-- Información de la reserva -->
+          <div class="col-8 col-md-6">
+            <div class="card-body">
+              <h5 class="card-title fw-bold d-flex align-items-center">
+                <RouterLink :userAuth="userAuth" :to="{ name: 'InformacionRuta', params: { ruta_id: booking.ruta_id } }">
+                  {{ booking.ruta_titulo }}
+                </RouterLink>
+                <span class="badge text-bg-success ms-2"> {{ booking.valoracion }} ⭐</span>
+              </h5>
+  
+              <p class="card-text">
+                <strong>Fecha:</strong> {{ booking.ruta_fecha }} | <strong>Hora:</strong> {{ booking.ruta_hora }} <br>
+                <img src="/images/pin.png" width="15" height="15"> {{ booking.ruta_localidad }} <br>
+                <strong>Descripción:</strong> {{ booking.ruta_descripcion.slice(0, 100) }}...
+              </p>
             </div>
-            <div class="col-md-5">
-                <div class="card-body">
-                    <h2 class="card-title font-weight-bold d-flex align-items-center">
-                        <RouterLink :userAuth="userAuth"
-                            :to="{ name: 'InformacionRuta', params: { ruta_id: booking.ruta_id } }">
-                            {{ booking.ruta_titulo }}
-                        </RouterLink><span class="badge text-bg-secondary ms-4 fs-6 bg-success"> {{ booking.valoracion
-                            }} ⭐</span>
-                    </h2>
-                    <div class="d-flex flex-row">
-                        <p class="card-text">
-                            <strong>Fecha:</strong> {{ booking.ruta_fecha }}. | <strong>Hora:</strong> {{
-                                booking.ruta_hora }} <br>
-                            <img src="/images/pin.png">{{ booking.ruta_localidad }}<br>
-                            <strong>Descripcion:</strong> {{ (booking.ruta_descripcion).slice(0,100) }}...
-                        </p>
-                    </div>
-                    <p class="card-text">
-                        <small class="text-body-secondary"> </small>
-                    </p>
-                </div>
+          </div>
+  
+          <!-- Botones y número de asistentes -->
+          <div class="col-12 col-md-4 d-flex flex-column align-items-md-end align-items-center">
+            <p class="mb-2">Núm. Asistentes: <strong>{{ booking.num_personas }}</strong></p>
+            <div class="d-flex flex-wrap gap-2 w-100 justify-content-center justify-content-md-end">
+              <button class="btn btn-success flex-fill" 
+                @click="modifyNumAssist(booking.num_personas, booking.reserva_id, booking.usuario_email, booking.ruta_id)">
+                Modificar Asistentes
+              </button>
+              <button class="btn btn-danger flex-fill" @click="deleteBooking(booking.reserva_id)">
+                Cancelar reserva
+              </button>
             </div>
-            <div class="btn-group me-2" role="group" aria-label="Botones para usuarios">
-                <p>Núm. Asistentes: {{ booking.num_personas }}</p>
-                <button type="button" class="p-0.5 m-2" id="modifyAssist"
-                    @click="modifyNumAssist(booking.num_personas, booking.reserva_id, booking.usuario_email, booking.ruta_id)">Modificar
-                    Asistentes</button>
-                <button type="button" class="p-0.5 m-2" id="cancelBooking"
-                    @click="deleteBooking(booking.reserva_id)">Cancelar reserva</button>
-            </div>
+          </div>
         </div>
+      </div>
     </div>
-
 </template>
+  
 <style scoped>
-/* Estilo de los botones*/
-#modifyAssist {
-    border: 0;
-    background-color: lightgreen;
-}
-
-#cancelBooking {
-    border: 0;
-    background-color: rgb(255, 68, 68);
+/* Hacer las imágenes más grandes */
+.img-ruta {
+    max-height: 120px; /* Aumentado de 80px a 120px */
+    width: 100%;
+    object-fit: cover;
 }
 </style>

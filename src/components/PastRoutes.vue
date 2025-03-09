@@ -70,11 +70,15 @@ getBooking(email); // Cargamos las reservas del cliente;
 
             <!-- Número de asistentes -->
             <div class="col-md-3 text-center">
-                <RouterLink :to="{ name: 'InformacionRuta', params: { ruta_id: booking.ruta_id } }">Valorar Ruta</RouterLink>
+                <RouterLink :to="{ name: 'InformacionRuta', params: { ruta_id: booking.ruta_id } }" class="btn p-3 m-3 valorar">Valorar Ruta</RouterLink>
             </div>
         </div>
     </div>
 
 
 </template>
-<style scoped></style>
+<style scoped>
+.valorar{
+    background-color: lightgreen;
+}
+</style>

@@ -86,7 +86,7 @@ function openModalList(route) {
                             <div @click="openModalList(route)">
                                 <!-- Imagen de perfil -->
                                 <img src="/images/profile.png" alt="Perfil" class="profile-img me-3">
-                                <p>{{ route.reservas?.num_personas || 0 }} Asistentes</p>
+                                <p>{{ route.reservas.reduce((acc, reserva) => acc + reserva.num_personas, 0) }} Asistentes</p>
                             </div>
                             <!-- Contenedor del acordeón -->
                             <div class="accordion-item flex-grow-1 shadow-sm border bg-white rounded hover-shadow">

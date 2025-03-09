@@ -44,6 +44,8 @@ async function openFilter() {
   if (selectedDate) {
     dateFiltered.value = selectedDate; // Guardamos la fecha
     getRoutesByDate(dateFiltered.value); // Llamamos a la funcion para filtrar las rutas;
+  } else{
+    getRoutesAvailable()
   }
 }
 // Funcion para filtrar las rutas por la fecha indicada
@@ -67,12 +69,16 @@ const routeName = ref('');
 // Tambien hacemos una funcion para filtrar las rutas por nombre
 function getRoutesByName() {
   if (routeName.value.length > 0) {
-    routes.value = allRoutes.value.filter(route =>
-      route.titulo.toLowerCase().includes(routeName.value.toLowerCase())
-    );
+    let today = new Date();
+    routes.value = allRoutes.value.filter(route => {
+      let routeDate = new Date(route.fecha);
+      return route.titulo.toLowerCase().includes(routeName.value.toLowerCase())
+        && routeDate > today;
+    });
   } else {
     getRoutesAvailable();
   }
+
 
 
 

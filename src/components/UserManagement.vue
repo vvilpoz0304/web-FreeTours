@@ -120,6 +120,10 @@ function previousPage() {
                         <p>Admin</p>
                     </td>
                     <td v-else>
+                        <button v-if="user.rol == 'guia'" type="button" class="btn me-3" data-bs-toggle="tooltip"
+                            data-bs-placement="top" data-bs-title="Tooltip on top"
+                            title="Este usuario es un guía que puede tener rutas asignadas, cambiar el rol borrará todas sus asignaciones"
+                            ref="tooltipButton"><img src="/images/warning.png"></button>
                         <select v-model="user.rol" @change="updateRol(user.id, user.rol)" name="rol" id="userRol">
                             <option value="guia">Guia Turistico</option>
                             <option value="cliente">Cliente</option>
